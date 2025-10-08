@@ -17,19 +17,17 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Player 1 webcam state
-  const [isWebcam1On, setIsWebcam1On] = useState(false);
-  const webcam1Ref = useRef(null);
-  const tmWebcam1Ref = useRef(null);
-  const raf1IdRef = useRef(null);
-  const [preds1, setPreds1] = useState([]);
-  
-  // Player 2 webcam state
-  const [isWebcam2On, setIsWebcam2On] = useState(false);
+  // Single webcam state for both players
+  const [isWebcamOn, setIsWebcamOn] = useState(false);
+  const webcamRef = useRef(null);
   const webcam2Ref = useRef(null);
-  const tmWebcam2Ref = useRef(null);
-  const raf2IdRef = useRef(null);
-  const [preds2, setPreds2] = useState([]);
+  const tmWebcamRef = useRef(null);
+  const rafIdRef = useRef(null);
+  const canvas1Ref = useRef(null);
+  const canvas2Ref = useRef(null);
+  const [predictions, setPredictions] = useState([]);
+  const [player1Gesture, setPlayer1Gesture] = useState(null);
+  const [player2Gesture, setPlayer2Gesture] = useState(null);
   
   // Game state
   const [gameActive, setGameActive] = useState(false);
@@ -51,10 +49,9 @@ export default function App() {
         const loaded = await tmImage.load(modelURL, metadataURL);
         setModel(loaded);
         
-        // Auto-start both cameras after model loads
+        // Auto-start webcam after model loads
         setTimeout(() => {
-          startWebcam1();
-          startWebcam2();
+          startWebcam();
         }, 500);
       } catch (e) {
         console.error("Model load error:", e);
@@ -65,110 +62,150 @@ export default function App() {
     }
     load();
     return () => {
-      stopWebcam1();
-      stopWebcam2();
+      stopWebcam();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Start Player 1 webcam
-  async function startWebcam1() {
+  // Start single webcam for both players
+  async function startWebcam() {
     if (!model) return;
     try {
-      setIsWebcam1On(true);
-      const tmWebcam = new tmImage.Webcam(400, 300, true);
-      tmWebcam1Ref.current = tmWebcam;
+      setIsWebcamOn(true);
+      const tmWebcam = new tmImage.Webcam(640, 480, true);
+      tmWebcamRef.current = tmWebcam;
       await tmWebcam.setup();
       await tmWebcam.play();
 
-      if (webcam1Ref.current) {
-        webcam1Ref.current.innerHTML = "";
-        webcam1Ref.current.appendChild(tmWebcam.webcam);
+      // Create canvas elements for each player view
+      const canvas1 = document.createElement('canvas');
+      const canvas2 = document.createElement('canvas');
+      canvas1.width = 360;
+      canvas1.height = 400;
+      canvas2.width = 360;
+      canvas2.height = 400;
+      
+      canvas1Ref.current = canvas1;
+      canvas2Ref.current = canvas2;
+
+      // Add canvases to player boxes
+      if (webcamRef.current) {
+        webcamRef.current.innerHTML = "";
+        webcamRef.current.appendChild(canvas1);
+        canvas1.style.width = "100%";
+        canvas1.style.height = "100%";
+        canvas1.style.objectFit = "cover";
       }
-
-      const loop = async () => {
-        tmWebcam.update();
-        const predictions = await model.predict(tmWebcam.canvas);
-        setPreds1(predictions);
-        raf1IdRef.current = requestAnimationFrame(loop);
-      };
-      loop();
-    } catch (e) {
-      console.error("Player 1 webcam error:", e);
-      setError("Player 1 webcam not available.");
-      setIsWebcam1On(false);
-    }
-  }
-
-  // Stop Player 1 webcam
-  function stopWebcam1() {
-    if (raf1IdRef.current) {
-      cancelAnimationFrame(raf1IdRef.current);
-      raf1IdRef.current = null;
-    }
-    if (tmWebcam1Ref.current) {
-      try {
-        tmWebcam1Ref.current.stop();
-      } catch (e) {}
-      if (webcam1Ref.current && tmWebcam1Ref.current.webcam) {
-        try {
-          webcam1Ref.current.removeChild(tmWebcam1Ref.current.webcam);
-        } catch (e) {}
-      }
-      tmWebcam1Ref.current = null;
-    }
-    setIsWebcam1On(false);
-    setPreds1([]);
-  }
-
-  // Start Player 2 webcam
-  async function startWebcam2() {
-    if (!model) return;
-    try {
-      setIsWebcam2On(true);
-      const tmWebcam = new tmImage.Webcam(400, 300, true);
-      tmWebcam2Ref.current = tmWebcam;
-      await tmWebcam.setup();
-      await tmWebcam.play();
 
       if (webcam2Ref.current) {
         webcam2Ref.current.innerHTML = "";
-        webcam2Ref.current.appendChild(tmWebcam.webcam);
+        webcam2Ref.current.appendChild(canvas2);
+        canvas2.style.width = "100%";
+        canvas2.style.height = "100%";
+        canvas2.style.objectFit = "cover";
       }
 
       const loop = async () => {
         tmWebcam.update();
-        const predictions = await model.predict(tmWebcam.canvas);
-        setPreds2(predictions);
-        raf2IdRef.current = requestAnimationFrame(loop);
+        
+        // Draw webcam feed to both canvases
+        const ctx1 = canvas1.getContext('2d');
+        const ctx2 = canvas2.getContext('2d');
+        
+        // Player 1: Show left half (mirrored)
+        ctx1.save();
+        ctx1.scale(-1, 1);
+        ctx1.drawImage(tmWebcam.canvas, 0, 0, 320, 480, -360, 0, 360, 400);
+        ctx1.restore();
+        
+        // Player 2: Show right half (mirrored)
+        ctx2.save();
+        ctx2.scale(-1, 1);
+        ctx2.drawImage(tmWebcam.canvas, 320, 0, 320, 480, -360, 0, 360, 400);
+        ctx2.restore();
+        
+        // Get predictions from the full frame
+        const fullPredictions = await model.predict(tmWebcam.canvas);
+        setPredictions(fullPredictions);
+        
+        // Analyze left and right halves of the frame for each player
+        await analyzePlayerGestures(tmWebcam.canvas);
+        
+        rafIdRef.current = requestAnimationFrame(loop);
       };
       loop();
     } catch (e) {
-      console.error("Player 2 webcam error:", e);
-      setError("Player 2 webcam not available.");
-      setIsWebcam2On(false);
+      console.error("Webcam error:", e);
+      if (e.name === 'NotAllowedError') {
+        setError("Camera permission denied. Please allow camera access and refresh the page.");
+      } else if (e.name === 'NotFoundError') {
+        setError("No camera found. Please connect a camera and refresh the page.");
+      } else if (e.name === 'NotReadableError') {
+        setError("Camera is being used by another application. Please close other apps using the camera.");
+      } else {
+        setError(`Webcam error: ${e.message || 'Unable to access camera'}`);
+      }
+      setIsWebcamOn(false);
     }
   }
 
-  // Stop Player 2 webcam
-  function stopWebcam2() {
-    if (raf2IdRef.current) {
-      cancelAnimationFrame(raf2IdRef.current);
-      raf2IdRef.current = null;
+  // Analyze gestures from left and right sides of the webcam
+  async function analyzePlayerGestures(canvas) {
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Create temporary canvases for left and right halves
+    const leftCanvas = document.createElement('canvas');
+    const rightCanvas = document.createElement('canvas');
+    leftCanvas.width = width / 2;
+    leftCanvas.height = height;
+    rightCanvas.width = width / 2;
+    rightCanvas.height = height;
+    
+    const leftCtx = leftCanvas.getContext('2d');
+    const rightCtx = rightCanvas.getContext('2d');
+    
+    // Extract left half (Player 1)
+    leftCtx.drawImage(canvas, 0, 0, width / 2, height, 0, 0, width / 2, height);
+    const leftPredictions = await model.predict(leftCanvas);
+    const player1Result = extractGesture(leftPredictions);
+    setPlayer1Gesture(player1Result);
+    
+    // Extract right half (Player 2)
+    rightCtx.drawImage(canvas, width / 2, 0, width / 2, height, 0, 0, width / 2, height);
+    const rightPredictions = await model.predict(rightCanvas);
+    const player2Result = extractGesture(rightPredictions);
+    setPlayer2Gesture(player2Result);
+  }
+
+  // Stop webcam
+  function stopWebcam() {
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
     }
-    if (tmWebcam2Ref.current) {
+    if (tmWebcamRef.current) {
       try {
-        tmWebcam2Ref.current.stop();
+        tmWebcamRef.current.stop();
       } catch (e) {}
-      if (webcam2Ref.current && tmWebcam2Ref.current.webcam) {
-        try {
-          webcam2Ref.current.removeChild(tmWebcam2Ref.current.webcam);
-        } catch (e) {}
-      }
-      tmWebcam2Ref.current = null;
+      tmWebcamRef.current = null;
     }
-    setIsWebcam2On(false);
-    setPreds2([]);
+    
+    // Clean up canvas elements
+    if (webcamRef.current) {
+      webcamRef.current.innerHTML = "";
+    }
+    if (webcam2Ref.current) {
+      webcam2Ref.current.innerHTML = "";
+    }
+    
+    canvas1Ref.current = null;
+    canvas2Ref.current = null;
+    setIsWebcamOn(false);
+    setPredictions([]);
+    setPlayer1Gesture(null);
+    setPlayer2Gesture(null);
   }
 
   // Game Logic
@@ -197,8 +234,8 @@ export default function App() {
   }
 
   function playRound() {
-    if (!model || !isWebcam1On || !isWebcam2On) {
-      setError("Both webcams must be started!");
+    if (!model || !isWebcamOn) {
+      setError("Webcam must be started!");
       return;
     }
 
@@ -224,8 +261,8 @@ export default function App() {
   }
 
   function captureGestures() {
-    const p1Result = extractGesture(preds1);
-    const p2Result = extractGesture(preds2);
+    const p1Result = player1Gesture;
+    const p2Result = player2Gesture;
 
     if (!p1Result || p1Result.confidence < 0.6) {
       setError("Player 1 gesture not detected clearly!");
@@ -286,8 +323,7 @@ export default function App() {
   }
 
   // UI helpers
-  const sorted1 = [...preds1].sort((a, b) => b.probability - a.probability);
-  const sorted2 = [...preds2].sort((a, b) => b.probability - a.probability);
+  const sortedPredictions = [...predictions].sort((a, b) => b.probability - a.probability);
 
   const getEmoji = (choice) => {
     if (choice === "Rock") return "✊";
@@ -309,14 +345,24 @@ export default function App() {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, system-ui", height: "100%", minHeight: "100vh", background: "#f3f4f6", display: "flex", flexDirection: "column" }}>
+    <div style={{ 
+      fontFamily: "Inter, system-ui", 
+      height: "100%", 
+      minHeight: "100vh", 
+      background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #a855f7 50%, #d946ef 75%, #ec4899 100%)", 
+      display: "flex", 
+      flexDirection: "column",
+      position: "relative"
+    }}>
       {/* Header */}
-      <header style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", padding: "20px", color: "white", textAlign: "center" }}>
-        <h1 style={{ margin: 0, fontSize: 32 }}>✊✋✌️ 2-Player Rock Paper Scissors</h1>
-        <p style={{ margin: "8px 0 0", opacity: 0.9 }}>Race to {WIN_SCORE} Wins! • AI Gesture Recognition</p>
+      <header style={{ padding: "20px", color: "white", textAlign: "center" }}>
+        <h1 style={{ margin: 0, fontSize: 32, fontWeight: "bold", textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>✊✋✌️ 2-Player Rock Paper Scissors</h1>
+        <p style={{ margin: "8px 0 0", opacity: 0.9, fontSize: 16 }}>Race to {WIN_SCORE} Wins! • AI Gesture Recognition</p>
       </header>
 
-      {loading && <p style={{ textAlign: "center", fontSize: 18, marginTop: 20 }}>🔄 Loading AI model…</p>}
+      {loading && <p style={{ textAlign: "center", fontSize: 18, marginTop: 20, color: "white" }}>🔄 Loading AI model…</p>}
+      {!loading && !model && <p style={{ textAlign: "center", fontSize: 18, marginTop: 20, color: "white" }}>⚠️ Model failed to load</p>}
+      {model && !isWebcamOn && <p style={{ textAlign: "center", fontSize: 18, marginTop: 20, color: "white" }}>📷 Starting camera...</p>}
       {error && (
         <div style={{ background: "#fee", padding: 12, margin: "16px auto", maxWidth: 800, borderRadius: 8, textAlign: "center" }}>
           <p style={{ color: "crimson", margin: 0 }}>{error}</p>
@@ -341,225 +387,353 @@ export default function App() {
         </div>
       )}
 
-      {/* Score Board */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 40, padding: "20px", marginBottom: 20 }}>
-        <div style={{ textAlign: "center", background: "#3b82f6", color: "white", padding: "20px 40px", borderRadius: 12, minWidth: 150 }}>
-          <div style={{ fontSize: 16, opacity: 0.9, marginBottom: 8 }}>PLAYER 1</div>
-          <div style={{ fontSize: 64, fontWeight: "bold" }}>{scores.player1}</div>
+
+      {/* Split Screen Layout - Inspired by the image */}
+      <div style={{ 
+        display: "flex", 
+        gap: 40, 
+        padding: "40px", 
+        height: "calc(100vh - 200px)", 
+        marginTop: "40px",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
+        {/* Player 1 Box */}
+        <div style={{ 
+          width: 400,
+          height: 500,
+          background: "linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)",
+          border: "4px solid #7c3aed",
+          borderRadius: 20,
+          position: "relative",
+          boxShadow: "0 10px 30px rgba(139, 92, 246, 0.3)"
+        }}>
+          {/* Player 1 Header */}
+          <div style={{
+            background: "#7c3aed",
+            color: "white",
+            padding: "12px 20px",
+            borderRadius: "16px 16px 0 0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: 18,
+            fontWeight: "bold"
+          }}>
+            <span>PLAYER 1</span>
+            <span style={{ 
+              background: "rgba(255,255,255,0.2)", 
+              padding: "4px 12px", 
+              borderRadius: 12,
+              fontSize: 24,
+              fontWeight: "bold"
+            }}>
+              {scores.player1}
+            </span>
+          </div>
+
+          {/* Player 1 Webcam Area */}
+          <div style={{
+            position: "absolute",
+            top: 80,
+            left: 20,
+            right: 20,
+            bottom: 20,
+            background: "rgba(255,255,255,0.1)",
+            borderRadius: 12,
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+            <div
+              ref={webcamRef}
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontSize: 16
+              }}
+            >
+              {!isWebcamOn && <span>Starting camera...</span>}
+            </div>
+
+            {/* Player 1 Gesture Overlay */}
+            {player1Gesture && (
+              <div style={{
+                position: "absolute",
+                top: 10,
+                left: 10,
+                background: "rgba(0,0,0,0.7)",
+                color: "white",
+                padding: "8px 12px",
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: "bold"
+              }}>
+                {player1Gesture.gesture} ({(player1Gesture.confidence * 100).toFixed(0)}%)
+              </div>
+            )}
+
+            {/* Player 1 Last Move */}
+            {player1Move && (
+              <div style={{
+                position: "absolute",
+                bottom: 10,
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "rgba(0,0,0,0.8)",
+                color: "white",
+                padding: "12px 20px",
+                borderRadius: 12,
+                textAlign: "center"
+              }}>
+                <div style={{ fontSize: 32 }}>{getEmoji(player1Move)}</div>
+                <div style={{ fontSize: 12, marginTop: 4 }}>{player1Move}</div>
+              </div>
+            )}
+          </div>
         </div>
-        <div style={{ textAlign: "center", background: "#6b7280", color: "white", padding: "20px 40px", borderRadius: 12, minWidth: 100 }}>
-          <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>TIES</div>
-          <div style={{ fontSize: 48, fontWeight: "bold" }}>{scores.ties}</div>
-        </div>
-        <div style={{ textAlign: "center", background: "#ef4444", color: "white", padding: "20px 40px", borderRadius: 12, minWidth: 150 }}>
-          <div style={{ fontSize: 16, opacity: 0.9, marginBottom: 8 }}>PLAYER 2</div>
-          <div style={{ fontSize: 64, fontWeight: "bold" }}>{scores.player2}</div>
+
+        {/* Player 2 Box */}
+        <div style={{ 
+          width: 400,
+          height: 500,
+          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+          border: "4px solid #059669",
+          borderRadius: 20,
+          position: "relative",
+          boxShadow: "0 10px 30px rgba(16, 185, 129, 0.3)"
+        }}>
+          {/* Player 2 Header */}
+          <div style={{
+            background: "#059669",
+            color: "white",
+            padding: "12px 20px",
+            borderRadius: "16px 16px 0 0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: 18,
+            fontWeight: "bold"
+          }}>
+            <span>PLAYER 2</span>
+            <span style={{ 
+              background: "rgba(255,255,255,0.2)", 
+              padding: "4px 12px", 
+              borderRadius: 12,
+              fontSize: 24,
+              fontWeight: "bold"
+            }}>
+              {scores.player2}
+            </span>
+          </div>
+
+          {/* Player 2 Webcam Area - Right half of the same webcam */}
+          <div style={{
+            position: "absolute",
+            top: 80,
+            left: 20,
+            right: 20,
+            bottom: 20,
+            background: "rgba(255,255,255,0.1)",
+            borderRadius: 12,
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+            <div
+              ref={webcam2Ref}
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontSize: 16
+              }}
+            >
+              {!isWebcamOn && <span>Starting camera...</span>}
+            </div>
+
+            {/* Player 2 Gesture Overlay */}
+            {player2Gesture && (
+              <div style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                background: "rgba(0,0,0,0.7)",
+                color: "white",
+                padding: "8px 12px",
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: "bold"
+              }}>
+                {player2Gesture.gesture} ({(player2Gesture.confidence * 100).toFixed(0)}%)
+              </div>
+            )}
+
+            {/* Player 2 Last Move */}
+            {player2Move && (
+              <div style={{
+                position: "absolute",
+                bottom: 10,
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "rgba(0,0,0,0.8)",
+                color: "white",
+                padding: "12px 20px",
+                borderRadius: 12,
+                textAlign: "center"
+              }}>
+                <div style={{ fontSize: 32 }}>{getEmoji(player2Move)}</div>
+                <div style={{ fontSize: 12, marginTop: 4 }}>{player2Move}</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Countdown Display */}
+      {/* Central Countdown Timer - Like in the image */}
       {countdown && (
-        <div style={{ 
-          position: "fixed", 
-          top: "50%", 
-          left: "50%", 
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
           transform: "translate(-50%, -50%)",
-          fontSize: 120,
+          width: 120,
+          height: 120,
+          background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+          border: "4px solid #d97706",
+          borderRadius: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 64,
           fontWeight: "bold",
-          color: "#667eea",
+          color: "white",
           zIndex: 1000,
-          textShadow: "0 4px 20px rgba(0,0,0,0.3)"
+          boxShadow: "0 10px 30px rgba(245, 158, 11, 0.5)",
+          animation: "pulse 1s infinite"
         }}>
           {countdown}
         </div>
       )}
 
-      {/* Split Screen Layout */}
-      <div style={{ display: "flex", gap: 0, maxWidth: 1600, margin: "0 auto", flex: 1, overflow: "hidden" }}>
-        {/* Player 1 Side */}
-        <div style={{ flex: 1, padding: 20, background: "#e0f2fe", borderRight: "4px solid #3b82f6" }}>
-          <h2 style={{ textAlign: "center", color: "#3b82f6", marginTop: 0 }}>🎮 Player 1</h2>
-          
-          <div
-            ref={webcam1Ref}
+      {/* Game Controls - Centered like in the image */}
+      <div style={{ 
+        position: "fixed", 
+        bottom: 40, 
+        left: "50%", 
+        transform: "translateX(-50%)",
+        display: "flex",
+        gap: 16,
+        zIndex: 20
+      }}>
+        {!isWebcamOn && model && (
+          <button 
+            onClick={startWebcam} 
             style={{
-              width: "100%",
-              maxWidth: 400,
-              height: 300,
-              margin: "0 auto",
-              border: "3px solid #3b82f6",
-              borderRadius: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#1e3a8a",
+              fontSize: 16,
+              fontWeight: "600",
+              padding: "12px 24px",
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
               color: "white",
-              overflow: "hidden"
+              border: "none",
+              borderRadius: 12,
+              cursor: "pointer",
+              boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)",
+              backdropFilter: "blur(10px)",
+              transition: "all 0.3s ease"
             }}
           >
-            {!isWebcam1On && <span>Starting camera...</span>}
-          </div>
-
-          {/* Player 1 Predictions */}
-          <div style={{ marginTop: 20, background: "white", padding: 16, borderRadius: 8 }}>
-            <h4 style={{ marginTop: 0 }}>Live Predictions</h4>
-            {sorted1.map((p) => (
-              <div key={p.className} style={{ marginBottom: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                  <strong>{p.className}</strong>
-                  <span>{(p.probability * 100).toFixed(1)}%</span>
-                </div>
-                <div style={{ height: 8, background: "#ddd", borderRadius: 4 }}>
-                  <div style={{ height: "100%", width: `${(p.probability * 100).toFixed(1)}%`, background: "#3b82f6", borderRadius: 4 }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Player 1 Last Move */}
-          {player1Move && (
-            <div style={{ marginTop: 16, textAlign: "center", background: "white", padding: 20, borderRadius: 8 }}>
-              <div style={{ fontSize: 14, color: "#666" }}>Last Move</div>
-              <div style={{ fontSize: 64 }}>{getEmoji(player1Move)}</div>
-              <div style={{ fontSize: 18, fontWeight: "bold", color: "#3b82f6" }}>{player1Move}</div>
-            </div>
-          )}
-        </div>
-
-        {/* Player 2 Side */}
-        <div style={{ flex: 1, padding: 20, background: "#fee2e2" }}>
-          <h2 style={{ textAlign: "center", color: "#ef4444", marginTop: 0 }}>🎮 Player 2</h2>
-          
-          <div
-            ref={webcam2Ref}
-            style={{
-              width: "100%",
-              maxWidth: 400,
-              height: 300,
-              margin: "0 auto",
-              border: "3px solid #ef4444",
-              borderRadius: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#7f1d1d",
-              color: "white",
-              overflow: "hidden"
-            }}
-          >
-            {!isWebcam2On && <span>Starting camera...</span>}
-          </div>
-
-          {/* Player 2 Predictions */}
-          <div style={{ marginTop: 20, background: "white", padding: 16, borderRadius: 8 }}>
-            <h4 style={{ marginTop: 0 }}>Live Predictions</h4>
-            {sorted2.map((p) => (
-              <div key={p.className} style={{ marginBottom: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                  <strong>{p.className}</strong>
-                  <span>{(p.probability * 100).toFixed(1)}%</span>
-                </div>
-                <div style={{ height: 8, background: "#ddd", borderRadius: 4 }}>
-                  <div style={{ height: "100%", width: `${(p.probability * 100).toFixed(1)}%`, background: "#ef4444", borderRadius: 4 }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Player 2 Last Move */}
-          {player2Move && (
-            <div style={{ marginTop: 16, textAlign: "center", background: "white", padding: 20, borderRadius: 8 }}>
-              <div style={{ fontSize: 14, color: "#666" }}>Last Move</div>
-              <div style={{ fontSize: 64 }}>{getEmoji(player2Move)}</div>
-              <div style={{ fontSize: 18, fontWeight: "bold", color: "#ef4444" }}>{player2Move}</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Game Controls */}
-      <div style={{ textAlign: "center", padding: 20, marginTop: 20 }}>
+            📷 Start Camera
+          </button>
+        )}
         <button 
           onClick={playRound} 
-          disabled={!model || !isWebcam1On || !isWebcam2On || gameActive || gameWinner}
+          disabled={!model || !isWebcamOn || gameActive || gameWinner}
           style={{
-            ...buttonStyle,
-            fontSize: 24,
-            padding: "16px 48px",
-            background: gameActive || gameWinner ? "#9ca3af" : "#10b981",
-            cursor: gameActive || !model || !isWebcam1On || !isWebcam2On || gameWinner ? "not-allowed" : "pointer",
-            opacity: gameActive || !model || !isWebcam1On || !isWebcam2On || gameWinner ? 0.6 : 1,
-            marginRight: 16
+            fontSize: 18,
+            fontWeight: "600",
+            padding: "16px 32px",
+            background: gameActive || gameWinner ? "rgba(156, 163, 175, 0.8)" : "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+            color: "white",
+            border: "none",
+            borderRadius: 12,
+            cursor: gameActive || !model || !isWebcamOn || gameWinner ? "not-allowed" : "pointer",
+            opacity: gameActive || !model || !isWebcamOn || gameWinner ? 0.6 : 1,
+            boxShadow: "0 4px 16px rgba(59, 130, 246, 0.4)",
+            backdropFilter: "blur(10px)",
+            transition: "all 0.3s ease"
           }}
         >
-          {countdown ? `${countdown}...` : gameActive ? "Capturing..." : "🎮 PLAY ROUND"}
+          {countdown ? `${countdown}...` : gameActive ? "Capturing..." : "▶ Start Round"}
         </button>
-        <button onClick={resetGame} style={{ ...buttonStyle, fontSize: 18, padding: "12px 32px", background: "#6b7280" }}>
+        <button 
+          onClick={resetGame} 
+          style={{ 
+            fontSize: 16,
+            fontWeight: "500",
+            padding: "12px 24px",
+            background: "rgba(255, 255, 255, 0.15)",
+            color: "white",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            borderRadius: 12,
+            cursor: "pointer",
+            backdropFilter: "blur(10px)",
+            transition: "all 0.3s ease"
+          }}
+        >
           Reset Game
         </button>
       </div>
 
-      {/* Round Result */}
+      {/* Round Result - Floating in center */}
       {roundResult && (
         <div style={{ 
-          margin: "20px auto",
-          padding: 20,
-          maxWidth: 600,
-          background: getRoundResultColor(),
+          position: "fixed",
+          top: "60%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          padding: 24,
+          background: "rgba(255, 255, 255, 0.15)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
           color: "white",
-          borderRadius: 12,
-          textAlign: "center"
+          borderRadius: 16,
+          textAlign: "center",
+          zIndex: 15,
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
         }}>
-          <div style={{ fontSize: 24, fontWeight: "bold", marginBottom: 12 }}>{getRoundResultText()}</div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 40, fontSize: 48 }}>
-            <div>
-              <div style={{ fontSize: 14 }}>P1: {getEmoji(player1Move)}</div>
+          <div style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>{getRoundResultText()}</div>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, fontSize: 40 }}>
+            <div style={{ textAlign: "center" }}>
+              <div>{getEmoji(player1Move)}</div>
+              <div style={{ fontSize: 12, marginTop: 4, opacity: 0.8 }}>Player 1</div>
             </div>
-            <div style={{ fontSize: 32, alignSelf: "center" }}>vs</div>
-            <div>
-              <div style={{ fontSize: 14 }}>P2: {getEmoji(player2Move)}</div>
+            <div style={{ fontSize: 24, opacity: 0.6 }}>vs</div>
+            <div style={{ textAlign: "center" }}>
+              <div>{getEmoji(player2Move)}</div>
+              <div style={{ fontSize: 12, marginTop: 4, opacity: 0.8 }}>Player 2</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Match History */}
-      {roundHistory.length > 0 && (
-        <div style={{ maxWidth: 800, margin: "20px auto", padding: 20, background: "white", borderRadius: 12 }}>
-          <h3 style={{ textAlign: "center", marginTop: 0 }}>📊 Match History</h3>
-          <div style={{ maxHeight: 300, overflowY: "auto" }}>
-            {roundHistory.map((round, i) => (
-              <div key={i} style={{ 
-                padding: 12, 
-                background: i % 2 === 0 ? "#f9fafb" : "white",
-                borderRadius: 6,
-                marginBottom: 8,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}>
-                <span style={{ fontSize: 24 }}>
-                  {getEmoji(round.player1)} vs {getEmoji(round.player2)}
-                </span>
-                <span style={{ 
-                  fontWeight: "bold",
-                  fontSize: 16,
-                  color: round.winner === "player1" ? "#3b82f6" : round.winner === "player2" ? "#ef4444" : "#f59e0b"
-                }}>
-                  {round.winner === "player1" ? "P1 WINS" : round.winner === "player2" ? "P2 WINS" : "TIE"}
-                </span>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>
-                  {(round.conf1 * 100).toFixed(0)}% | {(round.conf2 * 100).toFixed(0)}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div style={{ textAlign: "center", padding: 20, color: "#666", fontSize: 12 }}>
-        💡 Tip: Both players make clear gestures during countdown. Requires 60%+ confidence.
-      </div>
+      {/* Add CSS animation for countdown */}
+      <style>{`
+        @keyframes pulse {
+          0% { transform: translate(-50%, -50%) scale(1); }
+          50% { transform: translate(-50%, -50%) scale(1.1); }
+          100% { transform: translate(-50%, -50%) scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
