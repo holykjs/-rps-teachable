@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as tmImage from "@teachablemachine/image";
+import * as tf from "@tensorflow/tfjs";
 import * as handpose from "@tensorflow-models/handpose";
+import Webcam from "react-webcam";
+import { drawHand } from "./utilities";
 
 /**
  * Replace with YOUR Teachable Machine model URL after training
@@ -30,6 +33,7 @@ export default function App() {
   const [computerMove, setComputerMove] = useState(null);
   const [handLandmarks, setHandLandmarks] = useState(null);
   const [handposeModel, setHandposeModel] = useState(null);
+  const handDetectionRef = useRef(null);
   const [shufflingImage, setShufflingImage] = useState(null);
   const shuffleIntervalRef = useRef(null);
   
@@ -57,7 +61,7 @@ export default function App() {
         const loaded = await tmImage.load(modelURL, metadataURL);
         setModel(loaded);
         
-        // Load HandPose model
+        // Load TensorFlow HandPose model (like the provided example)
         console.log("Loading HandPose model...");
         const handModel = await handpose.load();
         setHandposeModel(handModel);
@@ -81,84 +85,17 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Start webcam with hand detection
+  // Start webcam with hand detection (using their approach)
   async function startWebcam() {
     if (!model || !handposeModel) return;
     try {
       setIsWebcamOn(true);
       console.log("Starting webcam with hand detection...");
       
-      // Use Teachable Machine webcam
-      const tmWebcam = new tmImage.Webcam(640, 480, true);
-      videoRef.current = tmWebcam;
-      await tmWebcam.setup();
-      await tmWebcam.play();
+      // Start hand detection loop (like their implementation)
+      startHandDetection();
       
       console.log("Webcam started successfully");
-
-      // Create single canvas for human player
-      const canvas = document.createElement('canvas');
-      canvas.width = 640;
-      canvas.height = 480;
-      canvasRef.current = canvas;
-
-      // Add canvas to webcam container
-      if (webcamRef.current) {
-        webcamRef.current.innerHTML = "";
-        webcamRef.current.appendChild(canvas);
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
-        canvas.style.objectFit = "cover";
-        canvas.style.borderRadius = "8px";
-      }
-
-      // Rendering loop with real hand detection
-      let frameCount = 0;
-      const loop = async () => {
-        try {
-          tmWebcam.update();
-          frameCount++;
-          
-          const ctx = canvas.getContext('2d');
-          
-          // Draw full webcam feed (mirrored for natural interaction)
-          ctx.save();
-          ctx.scale(-1, 1);
-          ctx.drawImage(tmWebcam.canvas, -canvas.width, 0, canvas.width, canvas.height);
-          ctx.restore();
-          
-          // Run hand detection every 3rd frame for performance
-          if (frameCount % 3 === 0 && handposeModel) {
-            try {
-              const hands = await handposeModel.estimateHands(tmWebcam.canvas);
-              if (hands.length > 0) {
-                const hand = hands[0];
-                setHandLandmarks(hand.landmarks);
-                
-                // Draw hand skeleton
-                drawHandSkeleton(ctx, hand.landmarks, canvas.width, canvas.height);
-              } else {
-                setHandLandmarks(null);
-              }
-            } catch (handError) {
-              console.error("Hand detection error:", handError);
-            }
-          }
-          
-          // Run gesture predictions every 2nd frame
-          if (frameCount % 2 === 0) {
-            const predictions = await model.predict(tmWebcam.canvas);
-            const gesture = extractGesture(predictions);
-            const smoothed = smoothGesture(gesture, humanGestureHistory);
-            setHumanGesture(smoothed);
-          }
-          
-          requestAnimationFrame(loop);
-        } catch (loopError) {
-          console.error("Error in render loop:", loopError);
-        }
-      };
-      loop();
       
     } catch (e) {
       console.error("Webcam error:", e);
@@ -175,53 +112,59 @@ export default function App() {
     }
   }
   
-  // Draw hand skeleton with connections
-  function drawHandSkeleton(ctx, landmarks, canvasWidth, canvasHeight) {
-    // Hand connections (finger bones)
-    const connections = [
-      // Thumb
-      [0, 1], [1, 2], [2, 3], [3, 4],
-      // Index finger
-      [0, 5], [5, 6], [6, 7], [7, 8],
-      // Middle finger
-      [0, 9], [9, 10], [10, 11], [11, 12],
-      // Ring finger
-      [0, 13], [13, 14], [14, 15], [15, 16],
-      // Pinky
-      [0, 17], [17, 18], [18, 19], [19, 20],
-      // Palm
-      [0, 5], [5, 9], [9, 13], [13, 17]
-    ];
-    
-    ctx.save();
-    ctx.scale(-1, 1);
-    ctx.translate(-canvasWidth, 0);
-    
-    // Draw connections (green lines)
-    ctx.strokeStyle = '#00FF00';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    
-    connections.forEach(([start, end]) => {
-      const startPoint = landmarks[start];
-      const endPoint = landmarks[end];
+  // Hand detection function (adapted from their approach)
+  const startHandDetection = () => {
+    handDetectionRef.current = setInterval(() => {
+      detectHands();
+    }, 100); // Run every 100ms for good performance
+  };
+  
+  const detectHands = async () => {
+    // Check if webcam and canvas are ready
+    if (
+      webcamRef.current &&
+      webcamRef.current.video &&
+      webcamRef.current.video.readyState === 4 &&
+      canvasRef.current &&
+      handposeModel
+    ) {
+      const video = webcamRef.current.video;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
       
-      ctx.moveTo(startPoint[0], startPoint[1]);
-      ctx.lineTo(endPoint[0], endPoint[1]);
-    });
-    
-    ctx.stroke();
-    
-    // Draw landmarks (red dots)
-    ctx.fillStyle = '#FF0000';
-    landmarks.forEach(([x, y]) => {
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, 2 * Math.PI);
-      ctx.fill();
-    });
-    
-    ctx.restore();
-  }
+      // Set canvas dimensions
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      try {
+        // Detect hands using HandPose (max 1 hand like cvzone)
+        const hands = await handposeModel.estimateHands(video);
+        
+        if (hands.length > 0) {
+          setHandLandmarks(hands[0].landmarks);
+          
+          // Draw hand skeleton (cvzone-like)
+          drawHand(hands, ctx);
+          
+          // Also run gesture prediction for game logic
+          if (model) {
+            const predictions = await model.predict(video);
+            const gesture = extractGesture(predictions);
+            const smoothed = smoothGesture(gesture, humanGestureHistory);
+            setHumanGesture(smoothed);
+          }
+        } else {
+          setHandLandmarks(null);
+        }
+      } catch (error) {
+        console.error('Hand detection error:', error);
+      }
+    }
+  };
+  
 
   // Generate computer move with image
   function generateComputerMove() {
@@ -284,7 +227,12 @@ export default function App() {
       setHumanGesture(null);
       setComputerMove(null);
       setHandLandmarks(null);
-      setHandposeModel(null);
+      
+      // Stop hand detection interval
+      if (handDetectionRef.current) {
+        clearInterval(handDetectionRef.current);
+        handDetectionRef.current = null;
+      }
     } catch (e) {
       console.error("Error stopping webcam:", e);
     }
@@ -564,20 +512,42 @@ export default function App() {
             alignItems: "center",
             justifyContent: "center"
           }}>
-            <div
+            {/* Webcam Component (like their implementation) */}
+            <Webcam
               ref={webcamRef}
+              mirrored={true}
               style={{
+                position: "absolute",
                 width: "100%",
                 height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontSize: 16
+                objectFit: "cover",
+                borderRadius: "8px"
               }}
-            >
-              {!isWebcamOn && <span>📷 Starting camera...</span>}
-            </div>
+            />
+            
+            {/* Canvas overlay for hand skeleton (like their implementation) */}
+            <canvas
+              ref={canvasRef}
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "8px",
+                zIndex: 10
+              }}
+            />
+            
+            {!isWebcamOn && (
+              <div style={{
+                position: "absolute",
+                color: "white",
+                fontSize: 16,
+                zIndex: 20
+              }}>
+                📷 Starting camera...
+              </div>
+            )}
 
             {/* Hand Detection Status */}
             {handLandmarks && (
