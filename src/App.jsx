@@ -4,6 +4,7 @@ import * as tf from "@tensorflow/tfjs";
 import * as handpose from "@tensorflow-models/handpose";
 import Webcam from "react-webcam";
 import { drawHand } from "./utilities";
+import "./App.css";
 
 /**
  * Replace with YOUR Teachable Machine model URL after training
@@ -132,9 +133,11 @@ export default function App() {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       
-      // Set canvas dimensions
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Set canvas dimensions to match video
+      const videoWidth = video.videoWidth || 640;
+      const videoHeight = video.videoHeight || 480;
+      canvas.width = videoWidth;
+      canvas.height = videoHeight;
       
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -412,18 +415,56 @@ export default function App() {
 
   return (
     <div style={{ 
-      fontFamily: "Inter, system-ui", 
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", 
       height: "100%", 
       minHeight: "100vh", 
-      background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #a855f7 50%, #d946ef 75%, #ec4899 100%)", 
+      background: "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)", 
       display: "flex", 
       flexDirection: "column",
-      position: "relative"
+      position: "relative",
+      overflow: "hidden"
     }}>
-      {/* Header */}
-      <header style={{ padding: "20px", color: "white", textAlign: "center" }}>
-        <h1 style={{ margin: 0, fontSize: 32, fontWeight: "bold", textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>✊✋✌️ Human vs Computer RPS</h1>
-        <p style={{ margin: "8px 0 0", opacity: 0.9, fontSize: 16 }}>Race to {WIN_SCORE} Wins! • AI Gesture Recognition vs Random AI</p>
+      {/* Modern Header */}
+      <header style={{ 
+        padding: "32px 24px", 
+        color: "white", 
+        textAlign: "center",
+        background: "rgba(255, 255, 255, 0.05)",
+        backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.1)"
+      }}>
+        <div style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "16px",
+          marginBottom: "12px"
+        }}>
+          <div style={{
+            fontSize: "48px",
+            background: "linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+          }}>✊✋✌️</div>
+          <h1 style={{ 
+            margin: 0, 
+            fontSize: "clamp(24px, 4vw, 42px)", 
+            fontWeight: "800", 
+            background: "linear-gradient(135deg, #ffffff, #e0e7ff)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "-0.02em"
+          }}>Rock Paper Scissors AI</h1>
+        </div>
+        <p style={{ 
+          margin: 0, 
+          opacity: 0.8, 
+          fontSize: "clamp(14px, 2vw, 18px)",
+          fontWeight: "500",
+          color: "#a5b4fc"
+        }}>First to {WIN_SCORE} wins • Real-time hand tracking powered by AI</p>
       </header>
 
       {loading && <p style={{ textAlign: "center", fontSize: 18, marginTop: 20, color: "white" }}>🔄 Loading AI model…</p>}
@@ -435,83 +476,77 @@ export default function App() {
         </div>
       )}
 
-      {/* Game Winner Banner */}
+      {/* Modern Game Winner Banner */}
       {gameWinner && (
         <div style={{ 
-          background: gameWinner === "Human" ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-          padding: 30, 
-          margin: "20px auto",
-          maxWidth: 800,
-          borderRadius: 12,
+          background: gameWinner === "Human" 
+            ? "linear-gradient(135deg, #00f5a0 0%, #00d9f5 100%)" 
+            : "linear-gradient(135deg, #ff8a80 0%, #ff5722 100%)",
+          padding: "40px 32px", 
+          margin: "24px auto",
+          maxWidth: "90%",
+          borderRadius: "24px",
           textAlign: "center",
           color: "white",
-          fontSize: 36,
-          fontWeight: "bold",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.3)"
+          fontSize: "clamp(24px, 5vw, 48px)",
+          fontWeight: "900",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)",
+          backdropFilter: "blur(20px)",
+          border: "2px solid rgba(255,255,255,0.2)",
+          animation: "winnerPulse 2s infinite"
         }}>
-          {gameWinner === "Human" ? "🎉 YOU WIN THE GAME! 🎉" : "🤖 COMPUTER WINS THE GAME! 🤖"}
+          <div style={{ marginBottom: "12px", fontSize: "64px" }}>
+            {gameWinner === "Human" ? "🎉" : "🤖"}
+          </div>
+          {gameWinner === "Human" ? "VICTORY!" : "AI WINS!"}
+          <div style={{ 
+            fontSize: "clamp(12px, 2vw, 16px)", 
+            opacity: 0.9, 
+            marginTop: "8px",
+            fontWeight: "600"
+          }}>
+            {gameWinner === "Human" ? "Congratulations, human!" : "Better luck next time!"}
+          </div>
         </div>
       )}
 
 
       {/* Split Screen Layout - Human vs Computer */}
-      <div style={{ 
-        display: "flex", 
-        gap: 40, 
-        padding: "40px", 
-        height: "calc(100vh - 200px)", 
-        marginTop: "40px",
-        alignItems: "center",
-        justifyContent: "center"
-      }}>
-        {/* Human Player Box */}
-        <div style={{ 
-          width: 500,
-          height: 500,
-          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-          border: "4px solid #059669",
-          borderRadius: 20,
-          position: "relative",
-          boxShadow: "0 10px 30px rgba(16, 185, 129, 0.3)"
-        }}>
-          {/* Human Player Header */}
-          <div style={{
-            background: "#059669",
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: "16px 16px 0 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            fontSize: 18,
-            fontWeight: "bold"
-          }}>
-            <span>👤 YOU</span>
-            <span style={{ 
-              background: "rgba(255,255,255,0.2)", 
-              padding: "4px 12px", 
-              borderRadius: 12,
-              fontSize: 24,
-              fontWeight: "bold"
+      <div className="game-container">
+        {/* Modern Human Player Box */}
+        <div className="player-box human-player">
+          {/* Modern Human Player Header */}
+          <div className="player-header">
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{
+                width: "40px",
+                height: "40px",
+                background: "linear-gradient(135deg, #00f5a0, #00d9f5)",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px"
+              }}>👤</div>
+              <span style={{ letterSpacing: "0.5px" }}>YOU</span>
+            </div>
+            <div style={{ 
+              background: "linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))", 
+              padding: "12px 20px", 
+              borderRadius: "20px",
+              fontSize: "clamp(20px, 3vw, 32px)",
+              fontWeight: "900",
+              minWidth: "60px",
+              textAlign: "center",
+              border: "1px solid rgba(255,255,255,0.2)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)"
             }}>
               {scores.human}
-            </span>
+            </div>
           </div>
 
           {/* Human Webcam Area */}
-          <div style={{
-            position: "absolute",
-            top: 80,
-            left: 20,
-            right: 20,
-            bottom: 20,
-            background: "rgba(255,255,255,0.1)",
-            borderRadius: 12,
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}>
+          <div className="webcam-area">
             {/* Webcam Component (like their implementation) */}
             <Webcam
               ref={webcamRef}
@@ -603,55 +638,40 @@ export default function App() {
           </div>
         </div>
 
-        {/* Computer Player Box */}
-        <div style={{ 
-          width: 500,
-          height: 500,
-          background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-          border: "4px solid #dc2626",
-          borderRadius: 20,
-          position: "relative",
-          boxShadow: "0 10px 30px rgba(239, 68, 68, 0.3)"
-        }}>
-          {/* Computer Player Header */}
-          <div style={{
-            background: "#dc2626",
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: "16px 16px 0 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            fontSize: 18,
-            fontWeight: "bold"
-          }}>
-            <span>🤖 COMPUTER</span>
-            <span style={{ 
-              background: "rgba(255,255,255,0.2)", 
-              padding: "4px 12px", 
-              borderRadius: 12,
-              fontSize: 24,
-              fontWeight: "bold"
+        {/* Modern Computer Player Box */}
+        <div className="player-box computer-player">
+          {/* Modern Computer Player Header */}
+          <div className="player-header">
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{
+                width: "40px",
+                height: "40px",
+                background: "linear-gradient(135deg, #ff8a80, #ff5722)",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px"
+              }}>🤖</div>
+              <span style={{ letterSpacing: "0.5px" }}>AI</span>
+            </div>
+            <div style={{ 
+              background: "linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))", 
+              padding: "12px 20px", 
+              borderRadius: "20px",
+              fontSize: "clamp(20px, 3vw, 32px)",
+              fontWeight: "900",
+              minWidth: "60px",
+              textAlign: "center",
+              border: "1px solid rgba(255,255,255,0.2)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)"
             }}>
               {scores.computer}
-            </span>
+            </div>
           </div>
 
           {/* Computer Display Area */}
-          <div style={{
-            position: "absolute",
-            top: 80,
-            left: 20,
-            right: 20,
-            bottom: 20,
-            background: "rgba(255,255,255,0.1)",
-            borderRadius: 12,
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "column"
-          }}>
+          <div className="webcam-area" style={{ flexDirection: "column" }}>
             {/* Computer Display - Idle State */}
             {!computerMove && !shufflingImage && (
               <div style={{
@@ -738,57 +758,75 @@ export default function App() {
         </div>
       </div>
 
-      {/* Central Countdown Timer - Like in the image */}
+      {/* Modern Countdown Timer */}
       {countdown && (
         <div style={{
           position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 120,
-          height: 120,
-          background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-          border: "4px solid #d97706",
-          borderRadius: 20,
+          width: "clamp(100px, 15vw, 140px)",
+          height: "clamp(100px, 15vw, 140px)",
+          background: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)",
+          border: "3px solid rgba(255, 255, 255, 0.3)",
+          borderRadius: "50%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 64,
-          fontWeight: "bold",
+          fontSize: "clamp(48px, 8vw, 80px)",
+          fontWeight: "900",
           color: "white",
           zIndex: 1000,
-          boxShadow: "0 10px 30px rgba(245, 158, 11, 0.5)",
-          animation: "pulse 1s infinite"
+          boxShadow: "0 20px 60px rgba(255, 154, 158, 0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
+          animation: "modernPulse 1s infinite",
+          backdropFilter: "blur(20px)",
+          textShadow: "0 2px 10px rgba(0,0,0,0.3)"
         }}>
           {countdown}
         </div>
       )}
 
-      {/* Game Controls - Centered like in the image */}
+      {/* Modern Game Controls */}
       <div style={{ 
         position: "fixed", 
-        bottom: 40, 
+        bottom: "clamp(20px, 5vh, 40px)", 
         left: "50%", 
         transform: "translateX(-50%)",
         display: "flex",
-        gap: 16,
-        zIndex: 20
+        gap: "clamp(12px, 2vw, 20px)",
+        zIndex: 20,
+        padding: "16px",
+        background: "rgba(255, 255, 255, 0.1)",
+        backdropFilter: "blur(20px)",
+        borderRadius: "24px",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+        boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)"
       }}>
         {!isWebcamOn && model && (
           <button 
             onClick={startWebcam} 
             style={{
-              fontSize: 16,
-              fontWeight: "600",
-              padding: "12px 24px",
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              fontSize: "clamp(14px, 2vw, 16px)",
+              fontWeight: "700",
+              padding: "16px 24px",
+              background: "linear-gradient(135deg, #00f5a0 0%, #00d9f5 100%)",
               color: "white",
-              border: "none",
-              borderRadius: 12,
+              border: "2px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "16px",
               cursor: "pointer",
-              boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)",
+              boxShadow: "0 8px 32px rgba(0, 245, 160, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
               backdropFilter: "blur(10px)",
-              transition: "all 0.3s ease"
+              transition: "all 0.3s ease",
+              letterSpacing: "0.5px",
+              textTransform: "uppercase"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 12px 40px rgba(0, 245, 160, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 8px 32px rgba(0, 245, 160, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)";
             }}
           >
             📷 Start Camera
@@ -798,18 +836,37 @@ export default function App() {
           onClick={playRound} 
           disabled={!model || !isWebcamOn || gameActive || gameWinner}
           style={{
-            fontSize: 18,
-            fontWeight: "600",
-            padding: "16px 32px",
-            background: gameActive || gameWinner ? "rgba(156, 163, 175, 0.8)" : "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+            fontSize: "clamp(16px, 2.5vw, 20px)",
+            fontWeight: "800",
+            padding: "20px 40px",
+            background: gameActive || gameWinner 
+              ? "linear-gradient(135deg, rgba(156, 163, 175, 0.6), rgba(107, 114, 128, 0.6))" 
+              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
-            border: "none",
-            borderRadius: 12,
+            border: "2px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
             cursor: gameActive || !model || !isWebcamOn || gameWinner ? "not-allowed" : "pointer",
             opacity: gameActive || !model || !isWebcamOn || gameWinner ? 0.6 : 1,
-            boxShadow: "0 4px 16px rgba(59, 130, 246, 0.4)",
-            backdropFilter: "blur(10px)",
-            transition: "all 0.3s ease"
+            boxShadow: gameActive || gameWinner 
+              ? "0 8px 32px rgba(156, 163, 175, 0.3)" 
+              : "0 12px 40px rgba(102, 126, 234, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+            backdropFilter: "blur(20px)",
+            transition: "all 0.3s ease",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+            minWidth: "160px"
+          }}
+          onMouseEnter={(e) => {
+            if (!gameActive && model && isWebcamOn && !gameWinner) {
+              e.target.style.transform = "translateY(-3px)";
+              e.target.style.boxShadow = "0 16px 50px rgba(102, 126, 234, 0.5), inset 0 1px 0 rgba(255,255,255,0.2)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!gameActive && model && isWebcamOn && !gameWinner) {
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 12px 40px rgba(102, 126, 234, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)";
+            }
           }}
         >
           {countdown ? `${countdown}...` : gameActive ? "Capturing..." : "▶ Start Round"}
@@ -817,41 +874,68 @@ export default function App() {
         <button 
           onClick={resetGame} 
           style={{ 
-            fontSize: 16,
-            fontWeight: "500",
-            padding: "12px 24px",
-            background: "rgba(255, 255, 255, 0.15)",
+            fontSize: "clamp(14px, 2vw, 16px)",
+            fontWeight: "600",
+            padding: "16px 24px",
+            background: "rgba(255, 255, 255, 0.1)",
             color: "white",
-            border: "1px solid rgba(255, 255, 255, 0.3)",
-            borderRadius: 12,
+            border: "2px solid rgba(255, 255, 255, 0.3)",
+            borderRadius: "16px",
             cursor: "pointer",
-            backdropFilter: "blur(10px)",
-            transition: "all 0.3s ease"
+            backdropFilter: "blur(20px)",
+            transition: "all 0.3s ease",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+            boxShadow: "0 8px 32px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255,255,255,0.1)"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "rgba(255, 255, 255, 0.2)";
+            e.target.style.transform = "translateY(-2px)";
+            e.target.style.boxShadow = "0 12px 40px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.2)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "rgba(255, 255, 255, 0.1)";
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 8px 32px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255,255,255,0.1)";
           }}
         >
           Reset Game
         </button>
       </div>
 
-      {/* Round Result - Floating in center */}
+      {/* Modern Round Result */}
       {roundResult && (
         <div style={{ 
           position: "fixed",
           top: "60%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          padding: 24,
-          background: "rgba(255, 255, 255, 0.15)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
+          padding: "32px 40px",
+          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1))",
+          backdropFilter: "blur(30px)",
+          border: "2px solid rgba(255, 255, 255, 0.3)",
           color: "white",
-          borderRadius: 16,
+          borderRadius: "24px",
           textAlign: "center",
           zIndex: 15,
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
+          animation: "resultSlideIn 0.5s ease-out",
+          minWidth: "clamp(280px, 40vw, 400px)"
         }}>
-          <div style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>{getRoundResultText()}</div>
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, fontSize: 40 }}>
+          <div style={{ 
+            fontSize: "clamp(18px, 3vw, 24px)", 
+            fontWeight: "800", 
+            marginBottom: "20px",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase"
+          }}>{getRoundResultText()}</div>
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center", 
+            gap: "clamp(20px, 4vw, 32px)", 
+            fontSize: "clamp(32px, 6vw, 48px)"
+          }}>
             <div style={{ textAlign: "center" }}>
               <div>{getEmoji(humanMove)}</div>
               <div style={{ fontSize: 12, marginTop: 4, opacity: 0.8 }}>You</div>
@@ -879,18 +963,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Add CSS animations */}
-      <style>{`
-        @keyframes pulse {
-          0% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -50%) scale(1.1); }
-          100% { transform: translate(-50%, -50%) scale(1); }
-        }
-        @keyframes computerReveal {
-          0% { transform: scale(0.8); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }
