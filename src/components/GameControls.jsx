@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import GestureTraining from './GestureTraining';
+import GestureAnalytics from './GestureAnalytics';
 
 const GameControls = ({ 
   model,
@@ -8,23 +10,38 @@ const GameControls = ({
   countdown,
   startWebcam,
   playRound,
-  resetGame
+  resetGame,
+  currentGesture,
+  gestureQuality,
+  getGestureAnalytics,
+  resetGestureRecognition
 }) => {
+  const [showTraining, setShowTraining] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+
+  const handleTrainingComplete = (results) => {
+    console.log('Training completed:', results);
+    setShowTraining(false);
+    // Could save training results to localStorage or send to analytics
+  };
   return (
     <div style={{ 
       position: "fixed", 
-      bottom: "clamp(20px, 5vh, 40px)", 
+      bottom: "clamp(15px, 3vh, 25px)", 
       left: "50%", 
       transform: "translateX(-50%)",
       display: "flex",
-      gap: "clamp(12px, 2vw, 20px)",
-      zIndex: 20,
-      padding: "16px",
+      flexWrap: "wrap",
+      gap: "clamp(8px, 1.5vw, 16px)",
+      zIndex: 1000,
+      padding: "clamp(12px, 2vw, 16px)",
       background: "rgba(255, 255, 255, 0.1)",
       backdropFilter: "blur(20px)",
-      borderRadius: "24px",
+      borderRadius: "20px",
       border: "1px solid rgba(255, 255, 255, 0.2)",
-      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)"
+      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+      maxWidth: "calc(100vw - 40px)",
+      justifyContent: "center"
     }}>
       {/* Start Camera Button */}
       {!isWebcamOn && model && (
@@ -99,6 +116,70 @@ const GameControls = ({
         {countdown ? `${countdown}...` : gameActive ? "Capturing..." : "▶ Start Round"}
       </button>
 
+      {/* Gesture Training Button */}
+      {isWebcamOn && (
+        <button 
+          onClick={() => setShowTraining(true)} 
+          style={{ 
+            fontSize: "clamp(12px, 1.8vw, 14px)",
+            fontWeight: "600",
+            padding: "12px 20px",
+            background: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+            color: "white",
+            border: "2px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "14px",
+            cursor: "pointer",
+            backdropFilter: "blur(20px)",
+            transition: "all 0.3s ease",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+            boxShadow: "0 6px 24px rgba(255, 154, 158, 0.3)"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "translateY(-2px)";
+            e.target.style.boxShadow = "0 8px 32px rgba(255, 154, 158, 0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 6px 24px rgba(255, 154, 158, 0.3)";
+          }}
+        >
+          🎯 Train
+        </button>
+      )}
+
+      {/* Gesture Analytics Button */}
+      {isWebcamOn && (
+        <button 
+          onClick={() => setShowAnalytics(true)} 
+          style={{ 
+            fontSize: "clamp(12px, 1.8vw, 14px)",
+            fontWeight: "600",
+            padding: "12px 20px",
+            background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+            color: "#333",
+            border: "2px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "14px",
+            cursor: "pointer",
+            backdropFilter: "blur(20px)",
+            transition: "all 0.3s ease",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+            boxShadow: "0 6px 24px rgba(168, 237, 234, 0.3)"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "translateY(-2px)";
+            e.target.style.boxShadow = "0 8px 32px rgba(168, 237, 234, 0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 6px 24px rgba(168, 237, 234, 0.3)";
+          }}
+        >
+          📊 Stats
+        </button>
+      )}
+
       {/* Reset Game Button */}
       <button 
         onClick={resetGame} 
@@ -130,6 +211,24 @@ const GameControls = ({
       >
         Reset Game
       </button>
+
+      {/* Gesture Training Modal */}
+      <GestureTraining
+        isActive={showTraining}
+        onComplete={handleTrainingComplete}
+        onClose={() => setShowTraining(false)}
+        currentGesture={currentGesture}
+        gestureQuality={gestureQuality}
+      />
+
+      {/* Gesture Analytics Modal */}
+      <GestureAnalytics
+        isVisible={showAnalytics}
+        onClose={() => setShowAnalytics(false)}
+        getGestureAnalytics={getGestureAnalytics}
+        gestureQuality={gestureQuality}
+        currentGesture={currentGesture}
+      />
     </div>
   );
 };

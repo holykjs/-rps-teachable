@@ -3,19 +3,21 @@ import WebcamFeed from './WebcamFeed';
 import ComputerDisplay from './ComputerDisplay';
 
 const PlayerPanel = ({ 
-  type, // 'human' or 'computer'
-  score,
-  webcamRef,
-  canvasRef,
-  isWebcamOn,
-  handLandmarks,
-  humanGesture,
-  humanMove,
-  computerMove,
-  shufflingImage,
-  countdown,
-  getEmoji,
-  getComputerImage
+  type, 
+  score, 
+  webcamRef, 
+  canvasRef, 
+  isWebcamOn, 
+  handLandmarks, 
+  humanGesture, 
+  humanMove, 
+  computerMove, 
+  shufflingImage, 
+  countdown, 
+  gestureQuality,
+  predictions,
+  getEmoji, 
+  getComputerImage 
 }) => {
   const isHuman = type === 'human';
   
@@ -51,13 +53,12 @@ const PlayerPanel = ({
           minWidth: "60px",
           textAlign: "center",
           border: "1px solid rgba(255,255,255,0.2)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)"
         }}>
           {score}
         </div>
       </div>
 
-      {/* Player Content Area */}
+      {/* Player Content */}
       {isHuman ? (
         <WebcamFeed
           webcamRef={webcamRef}
@@ -66,6 +67,8 @@ const PlayerPanel = ({
           handLandmarks={handLandmarks}
           humanGesture={humanGesture}
           humanMove={humanMove}
+          gestureQuality={gestureQuality}
+          predictions={predictions}
           getEmoji={getEmoji}
         />
       ) : (

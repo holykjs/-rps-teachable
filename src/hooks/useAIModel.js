@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import * as tmImage from "@teachablemachine/image";
 import * as handpose from "@tensorflow-models/handpose";
 import { drawHand } from "../utilities";
+import { gestureRecognizer, landmarkAnalyzer } from "../utils/gestureRecognition";
 
 export const useAIModel = (modelBaseUrl) => {
   // Model state
@@ -18,6 +19,8 @@ export const useAIModel = (modelBaseUrl) => {
   const [predictions, setPredictions] = useState([]);
   const [humanGesture, setHumanGesture] = useState(null);
   const [handLandmarks, setHandLandmarks] = useState(null);
+  const [gestureQuality, setGestureQuality] = useState(null);
+  const [landmarkAnalysis, setLandmarkAnalysis] = useState(null);
   
   // Refs
   const webcamRef = useRef(null);
@@ -117,51 +120,17 @@ export const useAIModel = (modelBaseUrl) => {
     };
   }, [modelBaseUrl]);
 
-  // Gesture extraction and smoothing
-  const extractGesture = (preds) => {
-    if (!preds || preds.length === 0) return null;
-    const sorted = [...preds].sort((a, b) => b.probability - a.probability);
-    const detected = sorted[0];
-    const className = detected?.className?.toLowerCase() || "";
-    
-    if (className.includes("rock")) return { gesture: "Rock", confidence: detected.probability };
-    if (className.includes("paper")) return { gesture: "Paper", confidence: detected.probability };
-    if (className.includes("scissors")) return { gesture: "Scissors", confidence: detected.probability };
-    return null;
+  // Reset gesture recognition state
+  const resetGestureRecognition = () => {
+    gestureRecognizer.reset();
+    setHumanGesture(null);
+    setGestureQuality(null);
+    setLandmarkAnalysis(null);
   };
 
-  const smoothGesture = (newGesture, historyRef) => {
-    if (!newGesture || newGesture.confidence < 0.5) return null;
-    
-    // Add to history (keep last 5 detections)
-    historyRef.current.push(newGesture);
-    if (historyRef.current.length > 5) {
-      historyRef.current.shift();
-    }
-    
-    // Find most common gesture in recent history
-    const gestureCounts = {};
-    let totalConfidence = 0;
-    
-    historyRef.current.forEach(g => {
-      if (g && g.gesture) {
-        gestureCounts[g.gesture] = (gestureCounts[g.gesture] || 0) + 1;
-        totalConfidence += g.confidence;
-      }
-    });
-    
-    // Return most frequent gesture with average confidence
-    const mostFrequent = Object.keys(gestureCounts).reduce((a, b) => 
-      gestureCounts[a] > gestureCounts[b] ? a : b, null);
-    
-    if (mostFrequent && gestureCounts[mostFrequent] >= 2) {
-      return {
-        gesture: mostFrequent,
-        confidence: totalConfidence / historyRef.current.length
-      };
-    }
-    
-    return newGesture;
+  // Get gesture analytics
+  const getGestureAnalytics = () => {
+    return gestureRecognizer.getAnalytics();
   };
 
   // Hand detection
@@ -190,23 +159,45 @@ export const useAIModel = (modelBaseUrl) => {
         const hands = await handposeModel.estimateHands(video);
         
         if (hands.length > 0) {
-          setHandLandmarks(hands[0].landmarks);
+          const landmarks = hands[0].landmarks;
+          setHandLandmarks(landmarks);
           
           // Draw hand skeleton
           drawHand(hands, ctx);
+          
+          // Analyze hand landmarks
+          const landmarkData = landmarkAnalyzer.analyzeHandLandmarks(landmarks);
+          setLandmarkAnalysis(landmarkData);
           
           // Get gesture predictions from Teachable Machine
           const predictions = await model.predict(video);
           setPredictions(predictions);
           
-          // Extract and smooth gesture
-          const rawGesture = extractGesture(predictions);
-          const smoothedGesture = smoothGesture(rawGesture, humanGestureHistory);
+          // Extract gesture using advanced recognition
+          const rawGesture = gestureRecognizer.extractGesture(predictions);
+          
+          // Apply advanced smoothing
+          const smoothedGesture = gestureRecognizer.smoothGesture(rawGesture);
+          
+          // Get gesture quality metrics
+          const quality = gestureRecognizer.getGestureQuality(smoothedGesture);
+          
           setHumanGesture(smoothedGesture);
+          setGestureQuality(quality);
+          
         } else {
           setHandLandmarks(null);
           setPredictions([]);
           setHumanGesture(null);
+          setGestureQuality(null);
+          setLandmarkAnalysis(null);
+          
+          // Continue smoothing even without hands (for decay)
+          const decayedGesture = gestureRecognizer.smoothGesture(null);
+          if (decayedGesture) {
+            setHumanGesture(decayedGesture);
+            setGestureQuality(gestureRecognizer.getGestureQuality(decayedGesture));
+          }
         }
       } catch (error) {
         console.error("Hand detection error:", error);
@@ -286,6 +277,11 @@ export const useAIModel = (modelBaseUrl) => {
       setPredictions([]);
       setHumanGesture(null);
       setHandLandmarks(null);
+      setGestureQuality(null);
+      setLandmarkAnalysis(null);
+      
+      // Reset gesture recognition
+      resetGestureRecognition();
       
       // Stop hand detection interval
       if (handDetectionRef.current) {
@@ -308,6 +304,8 @@ export const useAIModel = (modelBaseUrl) => {
     predictions,
     humanGesture,
     handLandmarks,
+    gestureQuality,
+    landmarkAnalysis,
     retryCount,
     isRetrying,
     
@@ -319,6 +317,8 @@ export const useAIModel = (modelBaseUrl) => {
     startWebcam,
     stopWebcam,
     retryLoadModels,
+    resetGestureRecognition,
+    getGestureAnalytics,
     setError
   };
 };

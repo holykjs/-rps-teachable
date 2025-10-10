@@ -1,13 +1,17 @@
 import React from 'react';
 import Webcam from 'react-webcam';
+import GesturePreview from './GesturePreview';
+import GestureConfidence from './GestureConfidence';
 
 const WebcamFeed = ({ 
   webcamRef, 
   canvasRef, 
   isWebcamOn, 
   handLandmarks, 
-  humanGesture,
-  humanMove,
+  humanGesture, 
+  humanMove, 
+  gestureQuality,
+  predictions,
   getEmoji 
 }) => {
   return (
@@ -98,6 +102,31 @@ const WebcamFeed = ({
         }}>
           <div style={{ fontSize: 32 }}>{getEmoji(humanMove)}</div>
           <div style={{ fontSize: 12, marginTop: 4 }}>{humanMove}</div>
+        </div>
+      )}
+
+      {/* Advanced Gesture Recognition Overlays */}
+      <GesturePreview
+        predictions={predictions}
+        currentGesture={humanGesture}
+        gestureQuality={gestureQuality}
+        showAllPredictions={true}
+        position="top-left"
+      />
+
+      {/* Gesture Confidence Display */}
+      {(humanGesture || gestureQuality) && (
+        <div style={{
+          position: "absolute",
+          bottom: "10px",
+          right: "10px",
+          zIndex: 50
+        }}>
+          <GestureConfidence
+            gesture={humanGesture}
+            quality={gestureQuality}
+            compact={true}
+          />
         </div>
       )}
     </div>

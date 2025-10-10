@@ -27,10 +27,14 @@ function AppContent() {
     isWebcamOn,
     humanGesture,
     handLandmarks,
+    gestureQuality,
+    predictions,
     webcamRef,
     canvasRef,
     startWebcam,
     retryLoadModels,
+    resetGestureRecognition,
+    getGestureAnalytics,
     isRetrying,
     setError
   } = useAIModel(MODEL_BASE_URL);
@@ -134,6 +138,8 @@ function AppContent() {
           handLandmarks={handLandmarks}
           humanGesture={humanGesture}
           humanMove={humanMove}
+          gestureQuality={gestureQuality}
+          predictions={predictions}
           getEmoji={getEmoji}
         />
 
@@ -169,6 +175,10 @@ function AppContent() {
         startWebcam={startWebcam}
         playRound={handlePlayRound}
         resetGame={resetGame}
+        currentGesture={humanGesture}
+        gestureQuality={gestureQuality}
+        getGestureAnalytics={getGestureAnalytics}
+        resetGestureRecognition={resetGestureRecognition}
       />
 
       {/* CSS Animations */}
