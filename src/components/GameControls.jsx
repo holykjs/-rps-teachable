@@ -4,6 +4,7 @@ import GestureAnalytics from './GestureAnalytics';
 
 const GameControls = ({ 
   model,
+  modelsReady,
   isWebcamOn,
   gameActive,
   gameWinner,
@@ -44,7 +45,7 @@ const GameControls = ({
       justifyContent: "center"
     }}>
       {/* Start Camera Button */}
-      {!isWebcamOn && model && (
+      {!isWebcamOn && modelsReady && (
         <button 
           onClick={startWebcam} 
           style={{
@@ -78,7 +79,7 @@ const GameControls = ({
       {/* Play Round Button */}
       <button 
         onClick={playRound} 
-        disabled={!model || !isWebcamOn || gameActive || gameWinner}
+        disabled={!modelsReady || !isWebcamOn || gameActive || gameWinner}
         style={{
           fontSize: "clamp(16px, 2.5vw, 20px)",
           fontWeight: "800",
@@ -89,8 +90,8 @@ const GameControls = ({
           color: "white",
           border: "2px solid rgba(255, 255, 255, 0.2)",
           borderRadius: "20px",
-          cursor: gameActive || !model || !isWebcamOn || gameWinner ? "not-allowed" : "pointer",
-          opacity: gameActive || !model || !isWebcamOn || gameWinner ? 0.6 : 1,
+          cursor: gameActive || !modelsReady || !isWebcamOn || gameWinner ? "not-allowed" : "pointer",
+          opacity: gameActive || !modelsReady || !isWebcamOn || gameWinner ? 0.6 : 1,
           boxShadow: gameActive || gameWinner 
             ? "0 8px 32px rgba(156, 163, 175, 0.3)" 
             : "0 12px 40px rgba(102, 126, 234, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
@@ -101,13 +102,13 @@ const GameControls = ({
           minWidth: "160px"
         }}
         onMouseEnter={(e) => {
-          if (!gameActive && model && isWebcamOn && !gameWinner) {
+          if (!gameActive && modelsReady && isWebcamOn && !gameWinner) {
             e.target.style.transform = "translateY(-3px)";
             e.target.style.boxShadow = "0 16px 50px rgba(102, 126, 234, 0.5), inset 0 1px 0 rgba(255,255,255,0.2)";
           }
         }}
         onMouseLeave={(e) => {
-          if (!gameActive && model && isWebcamOn && !gameWinner) {
+          if (!gameActive && modelsReady && isWebcamOn && !gameWinner) {
             e.target.style.transform = "translateY(0)";
             e.target.style.boxShadow = "0 12px 40px rgba(102, 126, 234, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)";
           }

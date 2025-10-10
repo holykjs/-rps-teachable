@@ -20,12 +20,19 @@ const WebcamFeed = ({
       <Webcam
         ref={webcamRef}
         mirrored={true}
+        videoConstraints={{
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          aspectRatio: 16 / 9,
+          facingMode: "user"
+        }}
         style={{
           position: "absolute",
           width: "100%",
           height: "100%",
-          objectFit: "cover",
-          borderRadius: "8px"
+          objectFit: "contain",
+          backgroundColor: "rgba(0,0,0,0.6)",
+          borderRadius: "12px"
         }}
       />
       
@@ -36,8 +43,8 @@ const WebcamFeed = ({
           position: "absolute",
           width: "100%",
           height: "100%",
-          objectFit: "cover",
-          borderRadius: "8px",
+          objectFit: "contain",
+          borderRadius: "12px",
           zIndex: 10
         }}
       />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAIModel } from "./hooks/useAIModel";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useToast } from "./components/Toast";
@@ -8,6 +8,7 @@ import PlayerPanel from "./components/PlayerPanel";
 import GameControls from "./components/GameControls";
 import CountdownOverlay from "./components/CountdownOverlay";
 import RoundResultOverlay from "./components/RoundResultOverlay";
+import MainMenu from "./components/MainMenu";
 import "./App.css";
 
 /**
@@ -19,8 +20,10 @@ const WIN_SCORE = 5; // Race to 5!
 
 function AppContent() {
   // Custom hooks for AI model, game logic, and toast notifications
+  const [showMenu, setShowMenu] = useState(true);
   const {
     model,
+    modelsReady,
     loading,
     loadingProgress,
     error,
@@ -40,6 +43,7 @@ function AppContent() {
   } = useAIModel(MODEL_BASE_URL);
 
   const toast = useToast();
+  const ToastContainer = toast.ToastContainer;
 
   const {
     gameActive,
@@ -98,6 +102,14 @@ function AppContent() {
     setError(null);
   };
 
+  const handleStartFromMenu = () => {
+    setShowMenu(false);
+    // Encourage user to start camera if not auto-started yet
+    if (!isWebcamOn) {
+      toast.info("Tip: Click Start Camera, then Start Round.");
+    }
+  };
+
   return (
     <div style={{ 
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", 
@@ -124,7 +136,7 @@ function AppContent() {
       />
 
       {/* Toast Container */}
-      <toast.ToastContainer />
+      <ToastContainer />
 
       {/* Split Screen Layout - Human vs Computer */}
       <div className="game-container">
@@ -168,6 +180,7 @@ function AppContent() {
       {/* Game Controls */}
       <GameControls
         model={model}
+        modelsReady={modelsReady}
         isWebcamOn={isWebcamOn}
         gameActive={gameActive}
         gameWinner={gameWinner}
@@ -179,6 +192,37 @@ function AppContent() {
         gestureQuality={gestureQuality}
         getGestureAnalytics={getGestureAnalytics}
         resetGestureRecognition={resetGestureRecognition}
+      />
+
+      {/* Floating Menu Button */}
+      {!showMenu && (
+        <button
+          onClick={() => setShowMenu(true)}
+          style={{
+            position: "fixed",
+            top: 18,
+            right: 18,
+            zIndex: 1000,
+            padding: "10px 14px",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.3)",
+            background: "rgba(255,255,255,0.12)",
+            color: "#fff",
+            fontWeight: 700,
+            cursor: "pointer",
+            backdropFilter: "blur(8px)"
+          }}
+        >
+          ☰ Menu
+        </button>
+      )}
+
+      {/* Main Menu Overlay */}
+      <MainMenu
+        isVisible={showMenu}
+        onStart={handleStartFromMenu}
+        onOpenStats={() => toast.info("Open Stats from the bottom controls after starting.")}
+        onOpenTraining={() => toast.info("Open Train from the bottom controls after starting.")}
       />
 
       {/* CSS Animations */}

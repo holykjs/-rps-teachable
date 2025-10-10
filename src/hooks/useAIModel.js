@@ -308,6 +308,8 @@ export const useAIModel = (modelBaseUrl) => {
     landmarkAnalysis,
     retryCount,
     isRetrying,
+    // Derived
+    modelsReady: Boolean(model && handposeModel),
     
     // Refs
     webcamRef,
