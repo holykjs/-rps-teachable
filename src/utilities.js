@@ -9,17 +9,26 @@ const fingerJoints = {
   pinky: [0, 17, 18, 19, 20],
 };
 
-// Draw hand skeleton with cvzone-like styling
+// Draw hand skeleton with cvzone-like styling (with proper mirroring)
 export const drawHand = (predictions, ctx) => {
   // Check if we have predictions
   if (predictions.length > 0) {
     // Only draw the first hand (max 1 hand like cvzone)
     const hand = predictions[0];
     const landmarks = hand.landmarks;
+    
+    // Get canvas dimensions for mirroring
+    const canvasWidth = ctx.canvas.width;
+    const canvasHeight = ctx.canvas.height;
+
+    // Save context and apply mirroring transformation
+    ctx.save();
+    ctx.scale(-1, 1); // Mirror horizontally to match the mirrored webcam
+    ctx.translate(-canvasWidth, 0);
 
     // Draw connections (green lines like cvzone)
     ctx.strokeStyle = '#00FF00';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
 
     // Draw finger connections
@@ -54,9 +63,12 @@ export const drawHand = (predictions, ctx) => {
     ctx.fillStyle = '#FF0000';
     landmarks.forEach(landmark => {
       ctx.beginPath();
-      ctx.arc(landmark[0], landmark[1], 4, 0, 2 * Math.PI);
+      ctx.arc(landmark[0], landmark[1], 5, 0, 2 * Math.PI);
       ctx.fill();
     });
+    
+    // Restore context
+    ctx.restore();
   }
 };
 
