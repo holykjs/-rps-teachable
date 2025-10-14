@@ -224,7 +224,6 @@ function AppContent() {
         isVisible={showMenu}
         onStart={handleStartFromMenu}
         onOpenStats={() => toast.info("Open Stats from the bottom controls after starting.")}
-        onOpenTraining={() => toast.info("Open Train from the bottom controls after starting.")}
       />
 
       {/* CSS Animations */}
