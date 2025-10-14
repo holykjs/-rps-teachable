@@ -37,8 +37,13 @@ const GestureTraining = ({
   useEffect(() => {
     if (isActive) {
       document.body.classList.add('modal-open');
+      const onKey = (e) => {
+        if (e.key === 'Escape') onClose?.();
+      };
+      window.addEventListener('keydown', onKey);
       return () => {
         document.body.classList.remove('modal-open');
+        window.removeEventListener('keydown', onKey);
       };
     }
   }, [isActive]);
@@ -142,48 +147,70 @@ const GestureTraining = ({
   const progressPercentage = (currentSamples / requiredSamples) * 100;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(15, 15, 35, 0.98)',
-      backdropFilter: 'blur(25px)',
-      zIndex: 99999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      padding: 'clamp(10px, 2vw, 20px)',
-      overflow: 'hidden'
-    }}>
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.12)',
-        backdropFilter: 'blur(30px)',
-        borderRadius: '20px',
-        padding: 'clamp(20px, 3vw, 28px)',
-        width: 'min(450px, calc(100vw - 40px))',
-        maxHeight: 'min(580px, calc(100vh - 40px))',
-        overflowY: 'auto',
-        textAlign: 'center',
-        color: 'white',
-        border: '2px solid rgba(255, 255, 255, 0.25)',
-        boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-        position: 'relative',
-        transform: 'translateZ(0)', // Force hardware acceleration
-        willChange: 'transform'
-      }}>
+    <div
+      onClick={() => onClose?.()}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(10, 12, 24, 0.65)',
+        backdropFilter: 'blur(8px)',
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'rgba(31, 31, 56, 0.9)',
+          backdropFilter: 'blur(18px)',
+          borderRadius: '16px 16px 0 0',
+          padding: 'clamp(16px, 2.5vw, 22px)',
+          width: 'min(100%, 900px)',
+          maxHeight: 'min(80vh, 720px)',
+          overflowY: 'auto',
+          textAlign: 'center',
+          color: 'white',
+          border: '1px solid rgba(255, 255, 255, 0.18)',
+          boxShadow: '0 -10px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+          position: 'relative',
+          transform: 'translateY(0)',
+          transition: 'transform 0.3s ease',
+        }}
+      >
         {/* Header */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 'clamp(20px, 4vw, 28px)'
+          marginBottom: 'clamp(12px, 2.5vw, 16px)'
         }}>
+          <button
+            onClick={onClose}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+              border: '1px solid rgba(255, 255, 255, 0.18)',
+              color: 'white',
+              fontWeight: 600,
+              padding: '8px 12px',
+              borderRadius: '10px',
+              cursor: 'pointer'
+            }}
+          >
+            <span style={{ fontSize: 16 }}>←</span>
+            <span>Back</span>
+          </button>
           <h2 style={{
             margin: 0,
-            fontSize: 'clamp(18px, 4vw, 22px)',
+            fontSize: 'clamp(16px, 3.5vw, 20px)',
             fontWeight: '700',
             background: 'linear-gradient(135deg, #00f5a0, #00d9f5)',
             backgroundClip: 'text',
@@ -192,34 +219,7 @@ const GestureTraining = ({
           }}>
             🎯 Gesture Training
           </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255, 255, 255, 0.7)',
-              fontSize: 'clamp(20px, 4vw, 24px)',
-              cursor: 'pointer',
-              padding: '4px',
-              borderRadius: '50%',
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-              e.target.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'none';
-              e.target.style.color = 'rgba(255, 255, 255, 0.7)';
-            }}
-          >
-            ×
-          </button>
+          <div style={{ width: 64 }} />
         </div>
 
         {/* Progress Overview */}

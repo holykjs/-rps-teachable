@@ -390,7 +390,6 @@ const MainMenu = ({ isVisible, onStart, onOpenStats }) => {
                       left: 0,
                       width: '100%',
                       height: '100%',
-                      transform: 'scaleX(-1)',
                       opacity: cameraActive ? 1 : 0,
                       pointerEvents: 'none'
                     }}

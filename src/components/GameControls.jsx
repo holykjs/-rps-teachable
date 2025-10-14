@@ -120,12 +120,14 @@ const GameControls = ({
       {/* Gesture Training Button */}
       {isWebcamOn && (
         <button 
-          onClick={() => setShowTraining(true)} 
+          onClick={() => setShowTraining((v) => !v)} 
           style={{ 
             fontSize: "clamp(12px, 1.8vw, 14px)",
             fontWeight: "600",
             padding: "12px 20px",
-            background: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+            background: showTraining
+              ? "linear-gradient(135deg, rgba(255,154,158,0.5) 0%, rgba(254,207,239,0.5) 100%)"
+              : "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
             color: "white",
             border: "2px solid rgba(255, 255, 255, 0.2)",
             borderRadius: "14px",
@@ -145,7 +147,7 @@ const GameControls = ({
             e.target.style.boxShadow = "0 6px 24px rgba(255, 154, 158, 0.3)";
           }}
         >
-          🎯 Train
+          {showTraining ? "⬇ Close" : "🎯 Train"}
         </button>
       )}
 
