@@ -22,6 +22,9 @@ const MainMenu = ({ isVisible, onStart, onOpenStats }) => {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const detectionIntervalRef = useRef(null);
+  const roiCanvasRef = useRef(null); // offscreen canvas for cropped hand ROI
+  const predsHistoryRef = useRef([]); // array of last N predictions (maps)
+  const stableTopHistoryRef = useRef([]); // last K top-class names
 
   useEffect(() => {
     // Load models when Train Gestures tab is activated
@@ -106,11 +109,11 @@ const MainMenu = ({ isVisible, onStart, onOpenStats }) => {
 
     try {
       // Detect hands using HandPose for visualization (if loaded)
+      let hands = [];
       if (handposeModel) {
-        const hands = await handposeModel.estimateHands(video);
+        hands = await handposeModel.estimateHands(video);
         if (hands.length > 0) {
           drawHand(hands, ctx);
-          // Log occasionally to confirm hand detection is working
           if (Math.random() < 0.02) {
             console.log("👋 Hand detected and drawn");
           }
@@ -119,23 +122,37 @@ const MainMenu = ({ isVisible, onStart, onOpenStats }) => {
 
       // Get gesture predictions from Teachable Machine model (if loaded)
       if (tmModel) {
-        const preds = await tmModel.predict(video);
-        setLocalPredictions(preds);
-
-        // Extract the gesture with highest confidence
-        if (preds && preds.length > 0) {
-          const maxPred = preds.reduce((max, pred) =>
-            pred.probability > max.probability ? pred : max
+        // 1) Choose input: crop to hand ROI if available, else full frame
+        let inputForModel = video;
+        if (hands.length > 0 && hands[0].landmarks && hands[0].landmarks.length) {
+          const { x, y, w, h } = getHandBBox(hands[0].landmarks, canvas.width, canvas.height);
+          const off = getOrCreateROICanvas();
+          const octx = off.getContext('2d');
+          // Clear and draw the cropped region into fixed 224x224
+          octx.clearRect(0, 0, off.width, off.height);
+          octx.drawImage(
+            video,
+            x, y, w, h,
+            0, 0, off.width, off.height
           );
+          inputForModel = off;
+        }
 
-          // Log every 20 detections (reduce console spam)
-          if (Math.random() < 0.05) {
-            console.log("✅ Detection working:", maxPred.className, (maxPred.probability * 100).toFixed(1) + "%");
-          }
+        // 2) Run prediction on chosen input
+        const rawPreds = await tmModel.predict(inputForModel);
 
-          if (maxPred.probability > 0.5) {
-            setLocalGesture(maxPred.className);
-          } else {
+        // 3) Smoothing: keep moving average over last N frames
+        const smoothed = smoothPredictions(rawPreds);
+        setLocalPredictions(smoothed);
+
+        // 4) Stability: require K consecutive frames of same top class
+        if (smoothed && smoothed.length > 0) {
+          const top = smoothed.reduce((m, p) => p.probability > m.probability ? p : m);
+          const stableGesture = updateStability(top.className, top.probability);
+          if (stableGesture) {
+            setLocalGesture(stableGesture);
+          } else if (top.probability < 0.45) {
+            // If confidence falls low, clear gesture to avoid flicker
             setLocalGesture(null);
           }
         }
@@ -143,6 +160,71 @@ const MainMenu = ({ isVisible, onStart, onOpenStats }) => {
     } catch (err) {
       console.error("Detection error:", err);
     }
+  };
+
+  // Helpers
+  const getOrCreateROICanvas = () => {
+    if (!roiCanvasRef.current) {
+      const c = document.createElement('canvas');
+      // Teachable Machine image models usually accept arbitrary sizes; 224x224 is a safe, small square
+      c.width = 224;
+      c.height = 224;
+      roiCanvasRef.current = c;
+    }
+    return roiCanvasRef.current;
+  };
+
+  const getHandBBox = (landmarks, maxW, maxH) => {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const [lx, ly] of landmarks.map(l => [l[0], l[1]])) {
+      if (lx < minX) minX = lx; if (ly < minY) minY = ly;
+      if (lx > maxX) maxX = lx; if (ly > maxY) maxY = ly;
+    }
+    // Add margin around hand box
+    const margin = 0.25; // 25% margin
+    let w = maxX - minX;
+    let h = maxY - minY;
+    let cx = minX + w / 2;
+    let cy = minY + h / 2;
+    const side = Math.max(w, h) * (1 + margin);
+    let x = Math.max(0, Math.floor(cx - side / 2));
+    let y = Math.max(0, Math.floor(cy - side / 2));
+    let s = Math.ceil(side);
+    if (x + s > maxW) s = maxW - x;
+    if (y + s > maxH) s = maxH - y;
+    return { x, y, w: s, h: s };
+  };
+
+  const smoothPredictions = (rawPreds) => {
+    // Convert to map {className: prob}
+    const map = {};
+    rawPreds.forEach(p => { map[p.className] = p.probability; });
+    // Push into history and cap length
+    const N = 7; // window size
+    predsHistoryRef.current.push(map);
+    if (predsHistoryRef.current.length > N) predsHistoryRef.current.shift();
+    // Average over history
+    const avg = {};
+    const classes = rawPreds.map(p => p.className);
+    classes.forEach(cls => {
+      let sum = 0;
+      predsHistoryRef.current.forEach(h => { sum += (h[cls] ?? 0); });
+      avg[cls] = sum / predsHistoryRef.current.length;
+    });
+    // Return list in same order with averaged probabilities
+    return classes.map(cls => ({ className: cls, probability: avg[cls] }));
+  };
+
+  const updateStability = (topClass, topProb) => {
+    const K = 4; // require 4 consecutive top-class frames
+    const MIN_CONF = 0.6;
+    stableTopHistoryRef.current.push(topClass);
+    if (stableTopHistoryRef.current.length > K) stableTopHistoryRef.current.shift();
+    const allSame = stableTopHistoryRef.current.length === K && stableTopHistoryRef.current.every(c => c === topClass);
+    if (allSame && topProb >= MIN_CONF) {
+      return topClass;
+    }
+    return null;
   };
   
   const startCamera = async () => {
