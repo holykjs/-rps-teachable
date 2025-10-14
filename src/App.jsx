@@ -10,6 +10,7 @@ import CountdownOverlay from "./components/CountdownOverlay";
 import RoundResultOverlay from "./components/RoundResultOverlay";
 import MainMenu from "./components/MainMenu";
 import "./App.css";
+import "./responsive.css";
 
 /**
  * Replace with YOUR Teachable Machine model URL after training

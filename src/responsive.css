@@ -1,0 +1,231 @@
+/* 
+ * Responsive Overrides for RPS AI Game
+ * This file adds mobile/tablet responsiveness without changing the core design
+ */
+
+/* Tablet (portrait and landscape) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  /* Slightly reduce spacing on tablets */
+  .game-container {
+    gap: clamp(40px, 8vw, 64px);
+    padding: clamp(20px, 3vw, 40px);
+  }
+}
+
+/* Mobile and small tablets */
+@media (max-width: 768px) {
+  /* Stack layout vertically */
+  .game-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    padding-bottom: 150px;
+  }
+  
+  /* Full width player boxes on mobile */
+  .player-box {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    min-height: 400px;
+  }
+  
+  /* Adjust control bar for mobile */
+  [style*="position: fixed"][style*="bottom"] {
+    bottom: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+    padding: 12px !important;
+    gap: 8px !important;
+  }
+  
+  /* Make all buttons responsive */
+  button {
+    font-size: clamp(13px, 3vw, 16px) !important;
+    padding: 14px 20px !important;
+    white-space: nowrap;
+  }
+  
+  /* Header adjustments */
+  header {
+    padding: 24px 16px !important;
+  }
+  
+  header h1 {
+    font-size: clamp(24px, 6vw, 32px) !important;
+  }
+  
+  header p {
+    font-size: clamp(13px, 3vw, 16px) !important;
+  }
+  
+  /* Winner banner responsive */
+  [style*="winnerPulse"] {
+    padding: 28px 24px !important;
+    font-size: clamp(28px, 7vw, 40px) !important;
+  }
+  
+  /* Round result overlay */
+  [style*="resultSlideIn"] {
+    padding: 24px 28px !important;
+    min-width: 280px !important;
+    max-width: 90vw !important;
+  }
+  
+  /* MainMenu modal responsive */
+  [style*="slideUp"] {
+    width: 95vw !important;
+    max-height: 95vh !important;
+    padding: 20px !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Menu grid to single column */
+  [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .game-container {
+    padding: 12px;
+    padding-bottom: 160px;
+    gap: 12px;
+  }
+  
+  .player-box {
+    min-height: 320px;
+    border-radius: 16px;
+  }
+  
+  .player-header {
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+  }
+  
+  .player-content {
+    padding: 12px !important;
+  }
+  
+  /* Smaller buttons */
+  button {
+    font-size: clamp(12px, 3.5vw, 14px) !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+  }
+  
+  /* Header compact */
+  header {
+    padding: 20px 12px !important;
+  }
+  
+  header h1 {
+    font-size: clamp(20px, 6vw, 26px) !important;
+  }
+  
+  header p {
+    font-size: clamp(12px, 3.2vw, 14px) !important;
+  }
+  
+  /* Smaller emojis */
+  [style*="fontSize"][style*="48px"] {
+    font-size: clamp(32px, 8vw, 40px) !important;
+  }
+  
+  /* Compact overlays */
+  [style*="resultSlideIn"] {
+    padding: 20px 24px !important;
+    font-size: clamp(16px, 4vw, 20px) !important;
+  }
+  
+  /* Menu button */
+  [style*="☰ Menu"] {
+    top: 12px !important;
+    right: 12px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .game-container {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .player-box {
+    min-height: 280px;
+    border-radius: 14px;
+  }
+  
+  .player-header {
+    padding: 12px 14px !important;
+    font-size: 14px !important;
+  }
+  
+  button {
+    font-size: 12px !important;
+    padding: 10px 14px !important;
+  }
+  
+  header h1 {
+    font-size: 18px !important;
+  }
+  
+  header p {
+    font-size: 11px !important;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+  .game-container {
+    flex-direction: row !important;
+    padding: 10px;
+    padding-bottom: 100px;
+  }
+  
+  .player-box {
+    width: 48%;
+    height: auto;
+    min-height: 280px;
+  }
+  
+  header {
+    padding: 16px 20px !important;
+  }
+  
+  header h1 {
+    font-size: 22px !important;
+  }
+  
+  header p {
+    font-size: 13px !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  button:hover {
+    transform: none !important;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Ensure crisp rendering */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
