@@ -152,13 +152,15 @@ const GameControls = ({
       {/* Gesture Analytics Button */}
       {isWebcamOn && (
         <button 
-          onClick={() => setShowAnalytics(true)} 
+          onClick={() => setShowAnalytics((v) => !v)} 
           style={{ 
             fontSize: "clamp(12px, 1.8vw, 14px)",
             fontWeight: "600",
             padding: "12px 20px",
-            background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-            color: "#333",
+            background: showAnalytics
+              ? "linear-gradient(135deg, rgba(168,237,234,0.4) 0%, rgba(254,214,227,0.4) 100%)"
+              : "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+            color: showAnalytics ? "white" : "#333",
             border: "2px solid rgba(255, 255, 255, 0.2)",
             borderRadius: "14px",
             cursor: "pointer",
@@ -177,7 +179,7 @@ const GameControls = ({
             e.target.style.boxShadow = "0 6px 24px rgba(168, 237, 234, 0.3)";
           }}
         >
-          📊 Stats
+          {showAnalytics ? "⬇ Close" : "📊 Stats"}
         </button>
       )}
 

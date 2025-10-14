@@ -59,26 +59,28 @@ const PlayerPanel = ({
       </div>
 
       {/* Player Content */}
-      {isHuman ? (
-        <WebcamFeed
-          webcamRef={webcamRef}
-          canvasRef={canvasRef}
-          isWebcamOn={isWebcamOn}
-          handLandmarks={handLandmarks}
-          humanGesture={humanGesture}
-          humanMove={humanMove}
-          gestureQuality={gestureQuality}
-          predictions={predictions}
-          getEmoji={getEmoji}
-        />
-      ) : (
-        <ComputerDisplay
-          computerMove={computerMove}
-          shufflingImage={shufflingImage}
-          countdown={countdown}
-          getComputerImage={getComputerImage}
-        />
-      )}
+      <div className="player-content">
+        {isHuman ? (
+          <WebcamFeed
+            webcamRef={webcamRef}
+            canvasRef={canvasRef}
+            isWebcamOn={isWebcamOn}
+            handLandmarks={handLandmarks}
+            humanGesture={humanGesture}
+            humanMove={humanMove}
+            gestureQuality={gestureQuality}
+            predictions={predictions}
+            getEmoji={getEmoji}
+          />
+        ) : (
+          <ComputerDisplay
+            computerMove={computerMove}
+            shufflingImage={shufflingImage}
+            countdown={countdown}
+            getComputerImage={getComputerImage}
+          />
+        )}
+      </div>
     </div>
   );
 };

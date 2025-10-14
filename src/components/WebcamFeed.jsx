@@ -96,19 +96,35 @@ const WebcamFeed = ({
 
       {/* Human Last Move */}
       {humanMove && (
-        <div style={{
-          position: "absolute",
-          bottom: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: "rgba(0,0,0,0.8)",
-          color: "white",
-          padding: "12px 20px",
-          borderRadius: 12,
-          textAlign: "center"
-        }}>
-          <div style={{ fontSize: 32 }}>{getEmoji(humanMove)}</div>
-          <div style={{ fontSize: 12, marginTop: 4 }}>{humanMove}</div>
+        <div
+          style={{
+            position: "absolute",
+            bottom: 12,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background:
+              "linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5))",
+            color: "white",
+            padding: "10px 14px",
+            borderRadius: 9999,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.35)",
+            backdropFilter: "blur(10px)",
+            zIndex: 30
+          }}
+        >
+          <div style={{ fontSize: 22, lineHeight: 1 }}>{getEmoji(humanMove)}</div>
+          <div style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: 0.2,
+            textTransform: "capitalize"
+          }}>
+            {humanMove}
+          </div>
         </div>
       )}
 

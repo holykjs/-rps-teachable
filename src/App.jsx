@@ -193,6 +193,8 @@ function AppContent() {
         getGestureAnalytics={getGestureAnalytics}
         resetGestureRecognition={resetGestureRecognition}
       />
+      {/* Spacer to prevent overlap with fixed control bar */}
+      <div className="controls-spacer" />
 
       {/* Floating Menu Button */}
       {!showMenu && (

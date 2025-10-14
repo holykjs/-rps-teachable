@@ -34,14 +34,15 @@ const ComputerDisplay = ({
             src={getComputerImage(shufflingImage)}
             alt={`Shuffling ${shufflingImage}`}
             style={{
-              width: "80%",
-              height: "70%",
-              objectFit: "cover",
-              borderRadius: "8px",
+              width: "95%",
+              height: "auto",
+              maxHeight: "85%",
+              objectFit: "contain",
+              borderRadius: "12px",
               border: "2px solid #FFD700",
-              opacity: 0.8,
-              transition: "all 0.1s ease",
-              transform: "scale(0.95)"
+              opacity: 0.9,
+              transition: "all 0.2s ease",
+              transform: "scale(0.98)"
             }}
           />
           <div style={{
@@ -71,11 +72,12 @@ const ComputerDisplay = ({
             src={getComputerImage(computerMove)}
             alt={`Computer ${computerMove}`}
             style={{
-              width: "80%",
-              height: "70%",
-              objectFit: "cover",
-              borderRadius: "8px",
-              border: "2px solid rgba(255,255,255,0.3)",
+              width: "95%",
+              height: "auto",
+              maxHeight: "85%",
+              objectFit: "contain",
+              borderRadius: "12px",
+              border: "2px solid rgba(255,255,255,0.35)",
               animation: "computerReveal 0.5s ease-out"
             }}
           />
