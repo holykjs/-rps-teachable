@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import GestureTraining from './GestureTraining';
 import GestureAnalytics from './GestureAnalytics';
 
 const GameControls = ({ 
@@ -17,14 +16,7 @@ const GameControls = ({
   getGestureAnalytics,
   resetGestureRecognition
 }) => {
-  const [showTraining, setShowTraining] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-
-  const handleTrainingComplete = (results) => {
-    console.log('Training completed:', results);
-    setShowTraining(false);
-    // Could save training results to localStorage or send to analytics
-  };
   return (
     <div style={{ 
       position: "fixed", 
@@ -117,39 +109,6 @@ const GameControls = ({
         {countdown ? `${countdown}...` : gameActive ? "Capturing..." : "▶ Start Round"}
       </button>
 
-      {/* Gesture Training Button */}
-      {isWebcamOn && (
-        <button 
-          onClick={() => setShowTraining((v) => !v)} 
-          style={{ 
-            fontSize: "clamp(12px, 1.8vw, 14px)",
-            fontWeight: "600",
-            padding: "12px 20px",
-            background: showTraining
-              ? "linear-gradient(135deg, rgba(255,154,158,0.5) 0%, rgba(254,207,239,0.5) 100%)"
-              : "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
-            color: "white",
-            border: "2px solid rgba(255, 255, 255, 0.2)",
-            borderRadius: "14px",
-            cursor: "pointer",
-            backdropFilter: "blur(20px)",
-            transition: "all 0.3s ease",
-            letterSpacing: "0.5px",
-            textTransform: "uppercase",
-            boxShadow: "0 6px 24px rgba(255, 154, 158, 0.3)"
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = "translateY(-2px)";
-            e.target.style.boxShadow = "0 8px 32px rgba(255, 154, 158, 0.4)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = "translateY(0)";
-            e.target.style.boxShadow = "0 6px 24px rgba(255, 154, 158, 0.3)";
-          }}
-        >
-          {showTraining ? "⬇ Close" : "🎯 Train"}
-        </button>
-      )}
 
       {/* Gesture Analytics Button */}
       {isWebcamOn && (
@@ -216,15 +175,6 @@ const GameControls = ({
       >
         Reset Game
       </button>
-
-      {/* Gesture Training Modal */}
-      <GestureTraining
-        isActive={showTraining}
-        onComplete={handleTrainingComplete}
-        onClose={() => setShowTraining(false)}
-        currentGesture={currentGesture}
-        gestureQuality={gestureQuality}
-      />
 
       {/* Gesture Analytics Modal */}
       <GestureAnalytics
