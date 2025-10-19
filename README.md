@@ -1,21 +1,32 @@
-# ✊✋✌️ 2-Player Rock Paper Scissors - AI Gesture Recognition
+# ✊✋✌️ Rock Paper Scissors - AI Gesture Recognition
 
-A real-time 2-player Rock Paper Scissors game using AI gesture recognition powered by Google Teachable Machine and TensorFlow.js.
+A real-time Rock Paper Scissors game with AI gesture recognition and LAN multiplayer support, powered by Google Teachable Machine and TensorFlow.js.
 
-![React](https://img.shields.io/badge/React-19.1.1-blue) ![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-4.22.0-orange) ![Vite](https://img.shields.io/badge/Vite-7.1.7-purple)
+![React](https://img.shields.io/badge/React-19.1.1-blue) ![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-4.22.0-orange) ![Vite](https://img.shields.io/badge/Vite-7.1.7-purple) ![Socket.IO](https://img.shields.io/badge/Socket.IO-4.7.2-green)
 
 ## 🎮 Features
 
-- **2-Player Split Screen** - Dual webcam support for head-to-head gameplay
+### **Single Player Mode**
+- **Play vs AI** - Challenge an intelligent computer opponent
+- **Advanced Gesture Recognition** - Real-time hand tracking with confidence scores
+- **Temporal Smoothing** - 8-frame history with consensus threshold for accuracy
+- **Gesture Analytics** - Performance metrics and improvement recommendations
+
+### **LAN Multiplayer Mode**
+- **Real-time Multiplayer** - Play against friends on the same network
+- **Room System** - Create/join games with 6-digit room codes
+- **Cross-device Support** - Works on desktop and mobile browsers
+- **Synchronized Gameplay** - Real-time gesture recognition for both players
+
+### **General Features**
 - **Race to 5 Wins** - First player to reach 5 wins takes victory
-- **Auto-Start Cameras** - Cameras initialize automatically on load
-- **Real-Time AI Recognition** - Live gesture detection with confidence scores
-- **Match History** - Track last 10 rounds with confidence levels
-- **Full-Screen Layout** - Optimized UI that fills the entire viewport
+- **Match History** - Track rounds with confidence levels and statistics
+- **Responsive Design** - Optimized for desktop and mobile devices
+- **Modern UI** - Beautiful gradients and smooth animations
 
 ## 🚀 Quick Start
 
-### Installation
+### Single Player Setup
 
 ```bash
 # Install dependencies
@@ -25,44 +36,66 @@ npm install --legacy-peer-deps
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+Open `http://localhost:5173` in your browser and click **"🤖 Play vs Computer"**.
 
-### First-Time Setup
+### Multiplayer Setup
 
-1. **Train Your Model** (one-time):
+```bash
+# Install client dependencies
+npm install --legacy-peer-deps
+
+# Install server dependencies
+cd server && npm install
+
+# Start multiplayer server (Terminal 1)
+cd server && npm start
+
+# Start game client (Terminal 2)
+npm run dev
+```
+
+1. Open `http://localhost:5173` in two browser windows/devices
+2. Click **"👥 Multiplayer"** in both
+3. One player creates a room, the other joins with the room code
+4. Start playing with real-time gesture recognition!
+
+### Optional: Custom AI Model
+
+1. **Train Your Model** (optional - default model included):
    - Go to [Teachable Machine](https://teachablemachine.withgoogle.com/train/image)
    - Create 3 classes: Rock, Paper, Scissors
    - Capture 50-100 samples per class using webcam
    - Click "Train Model" → "Export Model" → "Upload (shareable link)"
-   - Copy the model URL
 
 2. **Update Model URL**:
-   - Open `src/App.jsx`
-   - Replace line 8 with your model URL:
-   ```javascript
-   const MODEL_BASE_URL = "YOUR_TEACHABLE_MACHINE_URL_HERE/";
+   - Create `.env` file in project root:
+   ```bash
+   VITE_MODEL_URL=YOUR_TEACHABLE_MACHINE_URL_HERE/
    ```
-
-3. **Play!**
-   - Both cameras start automatically
-   - Click "🎮 PLAY ROUND"
-   - Make gestures during countdown
-   - First to 5 wins!
 
 ## 🎯 How to Play
 
-1. **Cameras Auto-Start** - Both Player 1 (left/blue) and Player 2 (right/red) cameras initialize automatically
-2. **Click Play Round** - Press the central "🎮 PLAY ROUND" button
-3. **Countdown** - 3... 2... 1... countdown appears on screen
-4. **Show Gestures** - Both players make Rock/Paper/Scissors gestures simultaneously
-5. **Winner Announced** - AI determines round winner, scores update
-6. **Race to Victory** - First to 5 wins gets the trophy! 🏆
+### Single Player Mode
+1. **Start Camera** - Allow camera permissions when prompted
+2. **Show Gesture** - Make Rock ✊, Paper ✋, or Scissors ✌️ gesture
+3. **Click Start Round** - Press the button when ready
+4. **AI Responds** - Computer makes its move simultaneously
+5. **Winner Announced** - First to 5 wins gets the trophy! 🏆
+
+### Multiplayer Mode
+1. **Create/Join Room** - Host creates room, guest joins with code
+2. **Both Start Cameras** - Each player allows camera permissions
+3. **Host Starts Game** - Click "🚀 Start Game" when both ready
+4. **Make Gestures** - Both players show gestures simultaneously
+5. **Real-time Results** - Synchronized scoring across devices
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 19.1.1 + Vite 7.1.7
 - **AI/ML**: Google Teachable Machine + TensorFlow.js 4.22.0
-- **Computer Vision**: @teachablemachine/image 0.8.5
+- **Computer Vision**: @teachablemachine/image 0.8.5, MediaPipe Hands
+- **Multiplayer**: Socket.IO 4.7.2 + Node.js Express server
+- **Gesture Recognition**: Advanced temporal smoothing with confidence scoring
 
 ## ⚙️ Configuration
 

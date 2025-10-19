@@ -39,7 +39,9 @@ const GameControls = ({
       {/* Start Camera Button */}
       {!isWebcamOn && modelsReady && (
         <button 
-          onClick={startWebcam} 
+          onClick={startWebcam}
+          aria-label="Start camera for gesture recognition"
+          tabIndex={0}
           style={{
             fontSize: "clamp(14px, 2vw, 16px)",
             fontWeight: "700",
@@ -72,6 +74,8 @@ const GameControls = ({
       <button 
         onClick={playRound} 
         disabled={!modelsReady || !isWebcamOn || gameActive || gameWinner}
+        aria-label={gameActive ? "Round in progress" : "Start new round"}
+        tabIndex={0}
         style={{
           fontSize: "clamp(16px, 2.5vw, 20px)",
           fontWeight: "800",

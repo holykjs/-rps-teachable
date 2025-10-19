@@ -1,27 +1,37 @@
 import React, { useState } from "react";
 import { useAIModel } from "./hooks/useAIModel";
-import { useGameLogic } from "./hooks/useGameLogic";
+import { useEnhancedGameLogic } from "./hooks/useEnhancedGameLogic";
+import { useMultiplayer } from "./hooks/useMultiplayer";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { useToast } from "./components/Toast";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AIErrorBoundary from "./components/AIErrorBoundary";
 import GameHeader from "./components/GameHeader";
 import PlayerPanel from "./components/PlayerPanel";
 import GameControls from "./components/GameControls";
 import CountdownOverlay from "./components/CountdownOverlay";
 import RoundResultOverlay from "./components/RoundResultOverlay";
 import MainMenu from "./components/MainMenu";
+import MultiplayerLobby from "./components/MultiplayerLobby";
+import GestureIndicator from "./components/GestureIndicator";
+import GameStatusBar from "./components/GameStatusBar";
+import ScoreProgress from "./components/ScoreProgress";
+import ParticleEffect from "./components/ParticleEffect";
 import "./App.css";
 import "./responsive.css";
 
 /**
- * Replace with YOUR Teachable Machine model URL after training
- * Get the shareable link from: https://teachablemachine.withgoogle.com/
+ * Configuration from environment variables
+ * Create .env file to customize these values
  */
-const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
-const WIN_SCORE = 5; // Race to 5!
+const MODEL_BASE_URL = import.meta.env.VITE_MODEL_URL || "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
+const WIN_SCORE = parseInt(import.meta.env.VITE_WIN_SCORE) || 5;
 
 function AppContent() {
   // Custom hooks for AI model, game logic, and toast notifications
   const [showMenu, setShowMenu] = useState(true);
+  const [showMultiplayerLobby, setShowMultiplayerLobby] = useState(false);
+  const [gameMode, setGameMode] = useState('single'); // 'single' or 'multiplayer'
   const {
     model,
     modelsReady,
@@ -46,6 +56,9 @@ function AppContent() {
   const toast = useToast();
   const ToastContainer = toast.ToastContainer;
 
+  // Multiplayer functionality
+  const multiplayer = useMultiplayer();
+
   const {
     gameActive,
     humanMove,
@@ -55,9 +68,12 @@ function AppContent() {
     countdown,
     gameWinner,
     shufflingImage,
+    isMultiplayerMode,
+    waitingForOpponent,
+    opponentName,
     playRound,
     resetGame
-  } = useGameLogic(WIN_SCORE);
+  } = useEnhancedGameLogic(WIN_SCORE, multiplayer);
 
   // Helper functions
   const getEmoji = (choice) => {
@@ -105,11 +121,45 @@ function AppContent() {
 
   const handleStartFromMenu = () => {
     setShowMenu(false);
+    setGameMode('single');
     // Encourage user to start camera if not auto-started yet
     if (!isWebcamOn) {
       toast.info("Tip: Click Start Camera, then Start Round.");
     }
   };
+
+  const handleStartMultiplayer = () => {
+    setShowMenu(false);
+    setShowMultiplayerLobby(true);
+    setGameMode('multiplayer');
+  };
+
+  const handleMultiplayerGameReady = () => {
+    setShowMultiplayerLobby(false);
+    if (!isWebcamOn) {
+      toast.info("Tip: Start your camera to begin playing!");
+    }
+  };
+
+  const handleBackToMenu = () => {
+    setShowMenu(true);
+    setShowMultiplayerLobby(false);
+    setGameMode('single');
+    if (multiplayer.isMultiplayer) {
+      multiplayer.leaveRoom();
+    }
+  };
+
+  // Keyboard navigation (after all functions are defined)
+  const { shortcuts } = useKeyboardNavigation({
+    onStartCamera: startWebcam,
+    onPlayRound: handlePlayRound,
+    onResetGame: resetGame,
+    isWebcamOn,
+    gameActive,
+    gameWinner,
+    modelsReady
+  });
 
   return (
     <div style={{ 
@@ -123,47 +173,83 @@ function AppContent() {
       overflow: "hidden"
     }}>
       {/* Game Header */}
-      <GameHeader
-        winScore={WIN_SCORE}
-        loading={loading}
-        loadingProgress={loadingProgress}
-        model={model}
-        isWebcamOn={isWebcamOn}
-        error={error}
-        gameWinner={gameWinner}
-        onRetryModels={handleRetryModels}
-        onDismissError={handleDismissError}
-        isRetrying={isRetrying}
-      />
+      <AIErrorBoundary onRetry={handleRetryModels}>
+        <GameHeader
+          winScore={WIN_SCORE}
+          loading={loading}
+          loadingProgress={loadingProgress}
+          model={model}
+          isWebcamOn={isWebcamOn}
+          error={error}
+          gameWinner={gameWinner}
+          onRetryModels={handleRetryModels}
+          onDismissError={handleDismissError}
+          isRetrying={isRetrying}
+        />
+      </AIErrorBoundary>
 
       {/* Toast Container */}
       <ToastContainer />
 
+      {/* Enhanced UI Components */}
+      <GameStatusBar
+        isMultiplayerMode={isMultiplayerMode}
+        connected={multiplayer.connected}
+        roomId={multiplayer.roomId}
+        opponentName={opponentName}
+        waitingForOpponent={waitingForOpponent}
+        gameActive={gameActive}
+        countdown={countdown}
+      />
+
+      <ScoreProgress
+        playerScore={scores.human}
+        opponentScore={scores.computer}
+        winScore={WIN_SCORE}
+        playerName="You"
+        opponentName={isMultiplayerMode ? opponentName : "AI"}
+        isMultiplayer={isMultiplayerMode}
+      />
+
+      <ParticleEffect 
+        trigger={gameWinner} 
+        type="win" 
+      />
+
+      <ParticleEffect 
+        trigger={roundResult && roundResult !== 'tie'} 
+        type="round" 
+      />
+
       {/* Split Screen Layout - Human vs Computer */}
       <div className="game-container">
         {/* Human Player Panel */}
-        <PlayerPanel
-          type="human"
-          score={scores.human}
-          webcamRef={webcamRef}
-          canvasRef={canvasRef}
-          isWebcamOn={isWebcamOn}
-          handLandmarks={handLandmarks}
-          humanGesture={humanGesture}
-          humanMove={humanMove}
-          gestureQuality={gestureQuality}
-          predictions={predictions}
-          getEmoji={getEmoji}
-        />
+        <AIErrorBoundary onRetry={handleRetryModels}>
+          <PlayerPanel
+            type="human"
+            score={scores.human}
+            webcamRef={webcamRef}
+            canvasRef={canvasRef}
+            isWebcamOn={isWebcamOn}
+            handLandmarks={handLandmarks}
+            humanGesture={humanGesture}
+            humanMove={humanMove}
+            gestureQuality={gestureQuality}
+            predictions={predictions}
+            getEmoji={getEmoji}
+          />
+        </AIErrorBoundary>
 
-        {/* Computer Player Panel */}
+        {/* Computer/Opponent Player Panel */}
         <PlayerPanel
-          type="computer"
+          type={isMultiplayerMode ? "opponent" : "computer"}
           score={scores.computer}
           computerMove={computerMove}
           shufflingImage={shufflingImage}
           countdown={countdown}
           getComputerImage={getComputerImage}
+          opponentName={isMultiplayerMode ? opponentName : "Computer"}
+          waitingForOpponent={waitingForOpponent}
         />
       </div>
 
@@ -198,9 +284,9 @@ function AppContent() {
       <div className="controls-spacer" />
 
       {/* Floating Menu Button */}
-      {!showMenu && (
+      {!showMenu && !showMultiplayerLobby && (
         <button
-          onClick={() => setShowMenu(true)}
+          onClick={handleBackToMenu}
           style={{
             position: "fixed",
             top: 18,
@@ -224,8 +310,19 @@ function AppContent() {
       <MainMenu
         isVisible={showMenu}
         onStart={handleStartFromMenu}
+        onStartMultiplayer={handleStartMultiplayer}
         onOpenStats={() => toast.info("Open Stats from the bottom controls after starting.")}
       />
+
+      {/* Multiplayer Lobby */}
+      {showMultiplayerLobby && (
+        <MultiplayerLobby
+          multiplayer={multiplayer}
+          onStartSinglePlayer={handleStartFromMenu}
+          onGameReady={handleMultiplayerGameReady}
+          onBackToMenu={handleBackToMenu}
+        />
+      )}
 
       {/* CSS Animations */}
       <style>{`

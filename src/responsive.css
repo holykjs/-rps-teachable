@@ -1,4 +1,84 @@
 /* 
+ * Enhanced Responsive Design for RPS AI Game
+ */
+
+/* Mobile-first approach */
+* {
+  box-sizing: border-box;
+}
+
+/* Touch-friendly button sizing */
+button {
+  min-height: 44px; /* iOS recommended touch target */
+  min-width: 44px;
+  touch-action: manipulation; /* Prevent zoom on double-tap */
+}
+
+/* Improved mobile layout */
+@media (max-width: 768px) {
+  .game-container {
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 16px !important;
+    padding: 12px !important;
+  }
+  
+  .player-box {
+    height: 40vh !important;
+    min-height: 280px !important;
+    width: 100% !important;
+  }
+  
+  .webcam-area {
+    height: 200px !important;
+  }
+  
+  .player-header {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Mobile-optimized controls */
+  .controls-spacer {
+    height: 120px !important; /* More space for mobile controls */
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .game-container {
+    gap: 20px !important;
+    padding: 16px !important;
+  }
+  
+  .player-box {
+    height: 45vh !important;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+  .game-container {
+    flex-direction: row !important;
+    height: calc(100vh - 120px) !important;
+  }
+  
+  .player-box {
+    height: 100% !important;
+    width: 50% !important;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .webcam-area canvas,
+  .webcam-area video {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* 
  * Responsive Overrides for RPS AI Game
  * This file adds mobile/tablet responsiveness without changing the core design
  */

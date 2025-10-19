@@ -17,12 +17,19 @@ const PlayerPanel = ({
   gestureQuality,
   predictions,
   getEmoji, 
-  getComputerImage 
+  getComputerImage,
+  opponentName = "Computer",
+  waitingForOpponent = false
 }) => {
   const isHuman = type === 'human';
+  const isOpponent = type === 'opponent';
   
   return (
-    <div className={`player-box ${isHuman ? 'human-player' : 'computer-player'}`}>
+    <div 
+      className={`player-box ${isHuman ? 'human-player' : 'computer-player'}`}
+      role="region"
+      aria-label={isHuman ? "Your game area" : isOpponent ? `${opponentName}'s game area` : "Computer opponent area"}
+    >
       {/* Player Header */}
       <div className="player-header">
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -31,17 +38,19 @@ const PlayerPanel = ({
             height: "40px",
             background: isHuman 
               ? "linear-gradient(135deg, #00f5a0, #00d9f5)"
-              : "linear-gradient(135deg, #ff8a80, #ff5722)",
+              : isOpponent
+                ? "linear-gradient(135deg, #f093fb, #f5576c)"
+                : "linear-gradient(135deg, #ff8a80, #ff5722)",
             borderRadius: "50%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "20px"
           }}>
-            {isHuman ? "👤" : "🤖"}
+            {isHuman ? "👤" : isOpponent ? "👥" : "🤖"}
           </div>
           <span style={{ letterSpacing: "0.5px" }}>
-            {isHuman ? "YOU" : "AI"}
+            {isHuman ? "YOU" : isOpponent ? opponentName.toUpperCase() : "AI"}
           </span>
         </div>
         <div style={{ 
@@ -78,6 +87,8 @@ const PlayerPanel = ({
             shufflingImage={shufflingImage}
             countdown={countdown}
             getComputerImage={getComputerImage}
+            isOpponent={isOpponent}
+            waitingForOpponent={waitingForOpponent}
           />
         )}
       </div>

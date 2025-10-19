@@ -2,6 +2,7 @@ import React from 'react';
 import Webcam from 'react-webcam';
 import GesturePreview from './GesturePreview';
 import GestureConfidence from './GestureConfidence';
+import GestureIndicator from './GestureIndicator';
 
 const WebcamFeed = ({ 
   webcamRef, 
@@ -77,22 +78,12 @@ const WebcamFeed = ({
         </div>
       )}
       
-      {/* Human Gesture Overlay */}
-      {humanGesture && (
-        <div style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          background: "rgba(0,0,0,0.7)",
-          color: "white",
-          padding: "8px 12px",
-          borderRadius: 8,
-          fontSize: 14,
-          fontWeight: "bold"
-        }}>
-          {humanGesture.gesture} ({(humanGesture.confidence * 100).toFixed(0)}%)
-        </div>
-      )}
+      {/* Enhanced Gesture Indicator */}
+      <GestureIndicator
+        gesture={humanGesture?.gesture}
+        confidence={humanGesture?.confidence || 0}
+        isActive={!!humanGesture}
+      />
 
       {/* Human Last Move */}
       {humanMove && (

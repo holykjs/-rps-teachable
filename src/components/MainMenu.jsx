@@ -5,7 +5,7 @@ import { drawHand } from "../utilities";
 
 const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
 
-const MainMenu = ({ isVisible, onStart, onOpenStats }) => {
+const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
   const [showHowTo, setShowHowTo] = useState(false);
   const [hoveredBtn, setHoveredBtn] = useState(null);
   const [testActive, setTestActive] = useState(false);
@@ -650,7 +650,21 @@ const MainMenu = ({ isVisible, onStart, onOpenStats }) => {
                 transition: 'all 0.2s ease'
               }}
             >
-              ▶ Start Game
+              🤖 Play vs Computer
+            </button>
+            <button 
+              onClick={onStartMultiplayer} 
+              onMouseEnter={() => setHoveredBtn('multiplayer')}
+              onMouseLeave={() => setHoveredBtn(null)}
+              style={{
+                ...bigBtnStyle,
+                background: "linear-gradient(135deg, #f093fb, #f5576c)",
+                transform: hoveredBtn === 'multiplayer' ? 'scale(1.05)' : 'scale(1)',
+                boxShadow: hoveredBtn === 'multiplayer' ? '0 8px 24px rgba(245,87,108,0.5)' : '0 4px 12px rgba(0,0,0,0.3)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              👥 Multiplayer
             </button>
             <button 
               onClick={() => setShowHowTo(true)} 
