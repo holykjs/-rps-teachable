@@ -121,7 +121,12 @@ function AppContent() {
 
   const handleStartFromMenu = () => {
     setShowMenu(false);
+    setShowMultiplayerLobby(false);
     setGameMode('single');
+    // Disconnect from multiplayer if connected
+    if (multiplayer.isMultiplayer) {
+      multiplayer.leaveRoom();
+    }
     // Encourage user to start camera if not auto-started yet
     if (!isWebcamOn) {
       toast.info("Tip: Click Start Camera, then Start Round.");
