@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import * as tmImage from "@teachablemachine/image";
-import * as handpose from "@tensorflow-models/handpose";
+import * as handPoseDetection from "@tensorflow-models/hand-pose-detection";
 import { drawHand } from "../utilities";
 import { gestureRecognizer, landmarkAnalyzer } from "../utils/gestureRecognition";
 
@@ -59,10 +59,21 @@ export const useAIModel = (modelBaseUrl) => {
       setModel(loaded);
       setLoadingProgress(60);
       
-      // Load TensorFlow HandPose model
-      console.log("Loading HandPose model...");
-      const handModel = await handpose.load();
-      setHandposeModel(handModel);
+      // Load Hand detector (MediaPipe runtime) to avoid tfhub.dev 403s
+      console.log("Loading Hand detector (MediaPipe Hands via hand-pose-detection)...");
+      const detectorConfig = {
+        runtime: 'mediapipe',
+        // Use CDN for MediaPipe assets (no TFHub calls)
+        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
+        // Options: 'lite' | 'full'
+        modelType: 'full',
+        maxHands: 1,
+      };
+      const detector = await handPoseDetection.createDetector(
+        handPoseDetection.SupportedModels.MediaPipeHands,
+        detectorConfig
+      );
+      setHandposeModel(detector);
       setLoadingProgress(90);
       
       clearInterval(progressInterval);
@@ -117,6 +128,12 @@ export const useAIModel = (modelBaseUrl) => {
     loadModels();
     return () => {
       stopWebcam();
+      // Dispose detector if available
+      try {
+        if (handposeModel && typeof handposeModel.dispose === 'function') {
+          handposeModel.dispose();
+        }
+      } catch (_) {}
     };
   }, [modelBaseUrl]);
 
@@ -155,15 +172,19 @@ export const useAIModel = (modelBaseUrl) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       try {
-        // Detect hands using HandPose
-        const hands = await handposeModel.estimateHands(video);
-        
-        if (hands.length > 0) {
-          const landmarks = hands[0].landmarks;
+        // Detect hands using MediaPipe Hands detector
+        const hands = await handposeModel.estimateHands(video, { flipHorizontal: false });
+        // Adapt to the shape expected by drawHand() and rest of app
+        const converted = hands.map(h => ({
+          landmarks: (h.keypoints || []).map(kp => [kp.x, kp.y, kp.z ?? 0])
+        }));
+
+        if (converted.length > 0) {
+          const landmarks = converted[0].landmarks;
           setHandLandmarks(landmarks);
           
           // Draw hand skeleton
-          drawHand(hands, ctx);
+          drawHand(converted, ctx);
           
           // Analyze hand landmarks
           const landmarkData = landmarkAnalyzer.analyzeHandLandmarks(landmarks);
@@ -288,6 +309,13 @@ export const useAIModel = (modelBaseUrl) => {
         clearInterval(handDetectionRef.current);
         handDetectionRef.current = null;
       }
+
+      // Dispose detector to free resources
+      try {
+        if (handposeModel && typeof handposeModel.dispose === 'function') {
+          handposeModel.dispose();
+        }
+      } catch (_) {}
     } catch (e) {
       console.error("Error stopping webcam:", e);
     }

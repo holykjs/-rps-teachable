@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import * as tmImage from "@teachablemachine/image";
-import * as handpose from "@tensorflow-models/handpose";
+import * as handPoseDetection from "@tensorflow-models/hand-pose-detection";
 import { drawHand } from "../utilities";
 
 const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
@@ -41,10 +41,19 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           setTmModel(loaded);
           console.log("Teachable Machine model loaded");
           
-          // Load handpose model for hand tracking visualization
-          const handModel = await handpose.load();
-          setHandposeModel(handModel);
-          console.log("Handpose model loaded");
+          // Load hand detector (MediaPipe runtime) for hand tracking visualization
+          const detectorConfig = {
+            runtime: 'mediapipe',
+            solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
+            modelType: 'full',
+            maxHands: 1,
+          };
+          const detector = await handPoseDetection.createDetector(
+            handPoseDetection.SupportedModels.MediaPipeHands,
+            detectorConfig
+          );
+          setHandposeModel(detector);
+          console.log("MediaPipe Hands detector loaded");
           
           setModelLoading(false);
         } catch (err) {
@@ -108,10 +117,14 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     try {
-      // Detect hands using HandPose for visualization (if loaded)
+      // Detect hands using MediaPipe detector for visualization (if loaded)
       let hands = [];
       if (handposeModel) {
-        hands = await handposeModel.estimateHands(video);
+        const results = await handposeModel.estimateHands(video, { flipHorizontal: false });
+        // Convert to the { landmarks: [[x,y,z], ...] } shape expected by drawHand and ROI code
+        hands = (results || []).map(h => ({
+          landmarks: (h.keypoints || []).map(kp => [kp.x, kp.y, kp.z ?? 0])
+        }));
         if (hands.length > 0) {
           drawHand(hands, ctx);
           if (Math.random() < 0.02) {
@@ -285,6 +298,12 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
       clearInterval(detectionIntervalRef.current);
       detectionIntervalRef.current = null;
     }
+    // Dispose the detector if present
+    try {
+      if (handposeModel && typeof handposeModel.dispose === 'function') {
+        handposeModel.dispose();
+      }
+    } catch (_) {}
     setCameraActive(false);
     setCurrentGesture(null);
     setLocalGesture(null);
