@@ -78,12 +78,19 @@ const WebcamFeed = ({
         </div>
       )}
       
-      {/* Enhanced Gesture Indicator */}
-      <GestureIndicator
-        gesture={humanGesture?.gesture}
-        confidence={humanGesture?.confidence || 0}
-        isActive={!!humanGesture}
-      />
+      {/* Enhanced Gesture Indicator - Top Right */}
+      <div style={{
+        position: "absolute",
+        top: "16px",
+        right: "16px",
+        zIndex: 50
+      }}>
+        <GestureIndicator
+          gesture={humanGesture?.gesture}
+          confidence={humanGesture?.confidence || 0}
+          isActive={!!humanGesture}
+        />
+      </div>
 
       {/* Human Last Move */}
       {humanMove && (
@@ -119,14 +126,6 @@ const WebcamFeed = ({
         </div>
       )}
 
-      {/* Advanced Gesture Recognition Overlays */}
-      <GesturePreview
-        predictions={predictions}
-        currentGesture={humanGesture}
-        gestureQuality={gestureQuality}
-        showAllPredictions={true}
-        position="top-left"
-      />
 
       {/* Gesture Confidence Display */}
       {(humanGesture || gestureQuality) && (

@@ -12,32 +12,22 @@ const GesturePreview = ({
 
   const getPositionStyles = () => {
     const baseStyles = {
-      position: 'absolute',
-      zIndex: 100,
       background: 'rgba(0, 0, 0, 0.8)',
       backdropFilter: 'blur(10px)',
-      borderRadius: '12px',
-      padding: '10px',
+      borderRadius: 'clamp(8px, 2vw, 12px)',
+      padding: 'clamp(8px, 2vw, 10px)',
       color: 'white',
-      fontSize: '11px',
+      fontSize: 'clamp(10px, 2.5vw, 11px)',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       border: '1px solid rgba(255, 255, 255, 0.2)',
-      minWidth: '180px',
-      maxWidth: '220px'
+      minWidth: 'clamp(160px, 40vw, 180px)',
+      maxWidth: 'clamp(200px, 50vw, 220px)',
+      // Responsive positioning
+      transform: 'translateY(-2px)', // Slight lift from bottom edge
+      boxSizing: 'border-box'
     };
 
-    switch (position) {
-      case 'top-left':
-        return { ...baseStyles, top: '8px', left: '8px' };
-      case 'top-right':
-        return { ...baseStyles, top: '8px', right: '8px' };
-      case 'bottom-left':
-        return { ...baseStyles, bottom: '60px', left: '8px' }; // Avoid bottom controls
-      case 'bottom-right':
-        return { ...baseStyles, bottom: '60px', right: '8px' }; // Avoid bottom controls
-      default:
-        return { ...baseStyles, top: '8px', left: '8px' };
-    }
+    return baseStyles;
   };
 
   const getGestureEmoji = (gesture) => {

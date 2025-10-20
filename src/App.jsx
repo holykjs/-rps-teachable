@@ -15,8 +15,8 @@ import MainMenu from "./components/MainMenu";
 import MultiplayerLobby from "./components/MultiplayerLobby";
 import GestureIndicator from "./components/GestureIndicator";
 import GameStatusBar from "./components/GameStatusBar";
-import ScoreProgress from "./components/ScoreProgress";
 import ParticleEffect from "./components/ParticleEffect";
+import GesturePreview from "./components/GesturePreview";
 import "./App.css";
 import "./responsive.css";
 
@@ -24,7 +24,7 @@ import "./responsive.css";
  * Configuration from environment variables
  * Create .env file to customize these values
  */
-const MODEL_BASE_URL = import.meta.env.VITE_MODEL_URL || "https://teachablemachine.withgoogle.com/models/qrRvpV3lX/";
+const MODEL_BASE_URL = import.meta.env.VITE_MODEL_URL || "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
 const WIN_SCORE = parseInt(import.meta.env.VITE_WIN_SCORE) || 5;
 
 function AppContent() {
@@ -196,25 +196,7 @@ function AppContent() {
       {/* Toast Container */}
       <ToastContainer />
 
-      {/* Enhanced UI Components */}
-      <GameStatusBar
-        isMultiplayerMode={isMultiplayerMode}
-        connected={multiplayer.connected}
-        roomId={multiplayer.roomId}
-        opponentName={opponentName}
-        waitingForOpponent={waitingForOpponent}
-        gameActive={gameActive}
-        countdown={countdown}
-      />
 
-      <ScoreProgress
-        playerScore={scores.human}
-        opponentScore={scores.computer}
-        winScore={WIN_SCORE}
-        playerName="You"
-        opponentName={isMultiplayerMode ? opponentName : "AI"}
-        isMultiplayer={isMultiplayerMode}
-      />
 
       <ParticleEffect 
         trigger={gameWinner} 
@@ -226,8 +208,48 @@ function AppContent() {
         type="round" 
       />
 
+      {/* Left Side Gesture Preview */}
+      {isWebcamOn && !showMenu && !showMultiplayerLobby && (
+        <div style={{
+          position: 'fixed',
+          left: 'clamp(8px, 2vw, 20px)',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 1000,
+          maxWidth: 'clamp(180px, 25vw, 250px)'
+        }}>
+          <GesturePreview
+            predictions={predictions}
+            currentGesture={humanGesture}
+            gestureQuality={gestureQuality}
+            showAllPredictions={true}
+            position="left-side"
+          />
+        </div>
+      )}
+
       {/* Split Screen Layout - Human vs Computer */}
       <div className="game-container">
+        {/* Game Status Bar - Top Center */}
+        {!showMenu && !showMultiplayerLobby && (
+          <div style={{
+            position: 'absolute',
+            top: 'clamp(16px, 3vh, 24px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 100
+          }}>
+            <GameStatusBar
+              isMultiplayerMode={isMultiplayerMode}
+              connected={multiplayer.connected}
+              roomId={multiplayer.roomId}
+              opponentName={opponentName}
+              waitingForOpponent={waitingForOpponent}
+              gameActive={gameActive}
+              countdown={countdown}
+            />
+          </div>
+        )}
         {/* Human Player Panel */}
         <AIErrorBoundary onRetry={handleRetryModels}>
           <PlayerPanel
@@ -284,6 +306,7 @@ function AppContent() {
         gestureQuality={gestureQuality}
         getGestureAnalytics={getGestureAnalytics}
         resetGestureRecognition={resetGestureRecognition}
+        predictions={predictions}
       />
       {/* Spacer to prevent overlap with fixed control bar */}
       <div className="controls-spacer" />

@@ -33,11 +33,6 @@ const GameStatusBar = ({
 
   return (
     <div style={{
-      position: 'fixed',
-      top: '20px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 1000,
       background: status.bg,
       backdropFilter: 'blur(12px)',
       border: `1px solid ${status.color}40`,
@@ -47,7 +42,8 @@ const GameStatusBar = ({
       alignItems: 'center',
       gap: '8px',
       boxShadow: `0 8px 32px ${status.color}20`,
-      animation: 'slideDown 0.3s ease-out'
+      animation: 'slideDown 0.3s ease-out',
+      whiteSpace: 'nowrap'
     }}>
       <div style={{
         color: status.color,

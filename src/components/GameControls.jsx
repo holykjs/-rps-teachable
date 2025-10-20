@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import GestureAnalytics from './GestureAnalytics';
+import GestureCalibration from './GestureCalibration';
 
 const GameControls = ({ 
   model,
@@ -14,9 +15,11 @@ const GameControls = ({
   currentGesture,
   gestureQuality,
   getGestureAnalytics,
-  resetGestureRecognition
+  resetGestureRecognition,
+  predictions
 }) => {
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showCalibration, setShowCalibration] = useState(false);
   return (
     <div style={{ 
       position: "fixed", 
@@ -180,6 +183,36 @@ const GameControls = ({
         Reset Game
       </button>
 
+      {/* Calibrate Gestures Button */}
+      {isWebcamOn && !gameActive && (
+        <button
+          onClick={() => setShowCalibration(true)}
+          style={{
+            fontSize: "clamp(12px, 1.8vw, 14px)",
+            fontWeight: "600",
+            padding: "12px 20px",
+            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            color: "white",
+            border: "2px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "14px",
+            cursor: "pointer",
+            boxShadow: "0 6px 24px rgba(240, 147, 251, 0.3)",
+            backdropFilter: "blur(20px)",
+            transition: "all 0.3s ease"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "translateY(-1px)";
+            e.target.style.boxShadow = "0 8px 32px rgba(240, 147, 251, 0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 6px 24px rgba(240, 147, 251, 0.3)";
+          }}
+        >
+          🎯 Calibrate
+        </button>
+      )}
+
       {/* Gesture Analytics Modal */}
       <GestureAnalytics
         isVisible={showAnalytics}
@@ -188,6 +221,15 @@ const GameControls = ({
         gestureQuality={gestureQuality}
         currentGesture={currentGesture}
       />
+
+      {/* Gesture Calibration Modal */}
+      {showCalibration && (
+        <GestureCalibration
+          onClose={() => setShowCalibration(false)}
+          predictions={predictions}
+          currentGesture={currentGesture}
+        />
+      )}
     </div>
   );
 };
