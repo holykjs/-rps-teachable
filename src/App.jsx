@@ -180,7 +180,7 @@ function AppContent() {
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", 
       height: "100%", 
       minHeight: "100vh", 
-      background: "linear-gradient(135deg, #1a2e1a, #243324, #2d4a2a, #1f3a1f, #152815)", 
+      background: "linear-gradient(135deg, #0a1628 0%, #1a1f3a 25%, #2d1b4e 50%, #1a1f3a 75%, #0a1628 100%)", 
       backgroundSize: "400% 400%",
       animation: "gradientShift 15s ease infinite",
       display: "flex", 
