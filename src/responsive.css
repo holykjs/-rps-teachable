@@ -18,41 +18,52 @@ button {
 @media (max-width: 768px) {
   .game-container {
     flex-direction: column !important;
-    height: auto !important;
-    gap: 16px !important;
-    padding: 12px !important;
+    height: calc(100vh - 60px) !important;
+    gap: clamp(12px, 3vw, 20px) !important;
+    padding: clamp(8px, 2vw, 16px) !important;
+    padding-bottom: clamp(80px, 20vh, 120px) !important;
+  }
+  
+  /* Hide left gesture preview on mobile to save space */
+  div[style*="position: fixed"][style*="left: clamp(8px, 2vw, 20px)"] {
+    display: none !important;
   }
   
   .player-box {
-    height: 40vh !important;
+    width: clamp(280px, 90vw, 400px) !important;
+    height: clamp(300px, 35vh, 400px) !important;
     min-height: 280px !important;
-    width: 100% !important;
+    aspect-ratio: 4/5 !important;
   }
   
   .webcam-area {
-    height: 200px !important;
+    height: auto !important;
+    flex: 1 !important;
   }
   
   .player-header {
-    padding: 8px 12px !important;
-    font-size: 14px !important;
+    padding: clamp(6px, 2vw, 12px) clamp(8px, 3vw, 16px) !important;
+    font-size: clamp(12px, 3vw, 16px) !important;
   }
   
   /* Mobile-optimized controls */
   .controls-spacer {
-    height: 120px !important; /* More space for mobile controls */
+    height: clamp(80px, 15vh, 120px) !important;
   }
 }
 
 /* Tablet adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
   .game-container {
-    gap: 20px !important;
-    padding: 16px !important;
+    gap: clamp(20px, 4vw, 60px) !important;
+    padding: clamp(12px, 2vw, 20px) !important;
+    height: calc(100vh - 70px) !important;
   }
   
   .player-box {
-    height: 45vh !important;
+    width: clamp(320px, 40vw, 480px) !important;
+    height: clamp(350px, 50vh, 550px) !important;
+    aspect-ratio: 4/5 !important;
   }
 }
 
@@ -66,6 +77,33 @@ button {
   .player-box {
     height: 100% !important;
     width: 50% !important;
+  }
+}
+
+/* Desktop large screens */
+@media (min-width: 1025px) {
+  .game-container {
+    gap: clamp(40px, 6vw, 80px) !important;
+    padding: clamp(16px, 2vw, 32px) !important;
+    max-width: 1400px !important;
+  }
+  
+  .player-box {
+    width: clamp(400px, 35vw, 550px) !important;
+    height: clamp(450px, 55vh, 650px) !important;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1600px) {
+  .game-container {
+    gap: 100px !important;
+    max-width: 1600px !important;
+  }
+  
+  .player-box {
+    width: 550px !important;
+    height: 650px !important;
   }
 }
 

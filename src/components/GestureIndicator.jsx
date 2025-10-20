@@ -20,9 +20,6 @@ const GestureIndicator = ({ gesture, confidence, isActive }) => {
 
   return (
     <div style={{
-      position: 'absolute',
-      top: '16px',
-      left: '16px',
       background: 'rgba(0, 0, 0, 0.8)',
       backdropFilter: 'blur(12px)',
       borderRadius: '16px',
@@ -32,8 +29,7 @@ const GestureIndicator = ({ gesture, confidence, isActive }) => {
       gap: '12px',
       border: `2px solid ${getConfidenceColor(confidence)}`,
       boxShadow: `0 8px 32px ${getConfidenceColor(confidence)}40`,
-      animation: isActive ? 'gestureDetected 0.3s ease-out' : 'none',
-      zIndex: 10
+      animation: isActive ? 'gestureDetected 0.3s ease-out' : 'none'
     }}>
       <div style={{
         fontSize: '24px',
