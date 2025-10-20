@@ -282,7 +282,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "radial-gradient(ellipse at center, #4a6741 0%, #2d4a2a 50%, #1a3319 100%)",
+      background: "radial-gradient(ellipse at center, #1a1f3a 0%, #0a1628 50%, #2d1b4e 100%)",
       animation: "fadeIn 0.3s ease-out",
       overflow: "hidden"
     }}>
@@ -300,7 +300,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
               position: "absolute",
               width: Math.random() * 4 + 2,
               height: Math.random() * 4 + 2,
-              background: "rgba(139, 195, 74, 0.3)",
+              background: "rgba(0, 229, 255, 0.3)",
               borderRadius: "50%",
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -344,10 +344,10 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
       <div style={{
         width: "min(720px, 90vw)",
         borderRadius: 24,
-        background: "rgba(45, 74, 42, 0.6)",
+        background: "rgba(26, 31, 58, 0.6)",
         backdropFilter: "blur(20px)",
-        border: "2px solid rgba(139, 195, 74, 0.3)",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(139, 195, 74, 0.2)",
+        border: "2px solid rgba(0, 229, 255, 0.3)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0, 229, 255, 0.2)",
         padding: "32px",
         color: "#fff",
         overflow: "hidden",
@@ -382,7 +382,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
               padding: '10px 20px',
               borderRadius: 10,
               border: '1px solid rgba(255,255,255,0.3)',
-              background: !testActive ? 'rgba(102,126,234,0.4)' : 'transparent',
+              background: !testActive ? 'rgba(0, 229, 255, 0.3)' : 'transparent',
               color: '#fff',
               fontWeight: 700,
               cursor: 'pointer',
@@ -400,7 +400,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
               padding: '10px 20px',
               borderRadius: 10,
               border: '1px solid rgba(255,255,255,0.3)',
-              background: testActive ? 'rgba(102,126,234,0.4)' : 'transparent',
+              background: testActive ? 'rgba(183, 148, 246, 0.3)' : 'transparent',
               color: '#fff',
               fontWeight: 700,
               cursor: 'pointer',
@@ -420,7 +420,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
             background: "rgba(0,0,0,0.2)",
             borderRadius: 16,
             padding: 24,
-            border: "1px solid rgba(139, 195, 74, 0.2)",
+            border: "1px solid rgba(0, 229, 255, 0.2)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -440,7 +440,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
                 opacity: 0.85, 
                 lineHeight: 1.6,
                 fontSize: 14,
-                color: "#b8d4a8"
+                color: "rgba(255,255,255,0.85)"
               }}>
                 Use your webcam to play Rock-Paper-Scissors against an AI. The model reads your hand gestures recognizes hand gesture to real time.
               </p>
@@ -450,123 +450,123 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
               <button 
                 onClick={onStart}
                 onMouseEnter={() => setHoveredBtn('newgame')}
-                onMouseLeave={() => setHoveredBtn(null)}
-                style={{
-                  padding: "12px 24px",
-                  borderRadius: 12,
-                  border: "none",
-                  background: hoveredBtn === 'newgame' 
-                    ? "linear-gradient(135deg, #9ccc65, #7cb342)"
-                    : "linear-gradient(135deg, #8bc34a, #689f38)",
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  transform: hoveredBtn === 'newgame' ? 'translateY(-2px)' : 'translateY(0)',
-                  boxShadow: hoveredBtn === 'newgame' 
-                    ? "0 6px 20px rgba(139, 195, 74, 0.4)"
-                    : "0 4px 12px rgba(0,0,0,0.3)"
-                }}
-              >
-                New Game
-              </button>
-            </div>
-          </div>
+                        onMouseLeave={() => setHoveredBtn(null)}
+                        style={{
+                          padding: "12px 24px",
+                          borderRadius: 12,
+                          border: "none",
+                          background: hoveredBtn === 'newgame' 
+                            ? "linear-gradient(135deg, #00e5ff, #b794f6)"
+                            : "linear-gradient(135deg, #00d4e5, #a78bfa)",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 14,
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          transform: hoveredBtn === 'newgame' ? 'translateY(-2px)' : 'translateY(0)',
+                          boxShadow: hoveredBtn === 'newgame' 
+                            ? "0 6px 20px rgba(0, 229, 255, 0.4)"
+                            : "0 4px 12px rgba(0,0,0,0.3)"
+                        }}
+                      >
+                        New Game
+                      </button>
+                    </div>
+                  </div>
 
-          {/* Right: Action buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <button 
-              onClick={onStart} 
-              onMouseEnter={() => setHoveredBtn('play')}
-              onMouseLeave={() => setHoveredBtn(null)}
-              style={{
-                padding: "18px 24px",
-                borderRadius: 16,
-                border: "none",
-                background: hoveredBtn === 'play'
-                  ? "linear-gradient(135deg, #9ccc65, #7cb342)"
-                  : "linear-gradient(135deg, #8bc34a, #689f38)",
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: 16,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                transform: hoveredBtn === 'play' ? 'scale(1.02)' : 'scale(1)',
-                boxShadow: hoveredBtn === 'play'
-                  ? "0 8px 24px rgba(139, 195, 74, 0.5)"
-                  : "0 4px 16px rgba(0,0,0,0.3)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10
-              }}
-            >
-              <span style={{ fontSize: 20 }}>🎮</span>
-              Play vs Computer
-            </button>
-            
-            <button 
-              onClick={onStartMultiplayer} 
-              onMouseEnter={() => setHoveredBtn('multiplayer')}
-              onMouseLeave={() => setHoveredBtn(null)}
-              style={{
-                padding: "18px 24px",
-                borderRadius: 16,
-                border: "none",
-                background: hoveredBtn === 'multiplayer'
-                  ? "linear-gradient(135deg, #9ccc65, #7cb342)"
-                  : "linear-gradient(135deg, #8bc34a, #689f38)",
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: 16,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                transform: hoveredBtn === 'multiplayer' ? 'scale(1.02)' : 'scale(1)',
-                boxShadow: hoveredBtn === 'multiplayer'
-                  ? "0 8px 24px rgba(139, 195, 74, 0.5)"
-                  : "0 4px 16px rgba(0,0,0,0.3)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10
-              }}
-            >
-              <span style={{ fontSize: 20 }}>👥</span>
-              Multiplayer
-            </button>
-            
-            <button 
-              onClick={() => setShowHowTo(true)} 
-              onMouseEnter={() => setHoveredBtn('howto')}
-              onMouseLeave={() => setHoveredBtn(null)}
-              style={{
-                padding: "18px 24px",
-                borderRadius: 16,
-                border: "none",
-                background: hoveredBtn === 'howto'
-                  ? "linear-gradient(135deg, #4db6ac, #26a69a)"
-                  : "linear-gradient(135deg, #26a69a, #00897b)",
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: 16,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                transform: hoveredBtn === 'howto' ? 'scale(1.02)' : 'scale(1)',
-                boxShadow: hoveredBtn === 'howto'
-                  ? "0 8px 24px rgba(38, 166, 154, 0.5)"
-                  : "0 4px 16px rgba(0,0,0,0.3)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10
-              }}
-            >
-              <span style={{ fontSize: 20 }}>🎓</span>
-              How to Play
-            </button>
-            
-            <a href="https://teachablemachine.withgoogle.com/" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                  {/* Right: Action buttons */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <button 
+                      onClick={onStart} 
+                      onMouseEnter={() => setHoveredBtn('play')}
+                      onMouseLeave={() => setHoveredBtn(null)}
+                      style={{
+                        padding: "18px 24px",
+                        borderRadius: 16,
+                        border: "none",
+                        background: hoveredBtn === 'play'
+                          ? "linear-gradient(135deg, #00e5ff, #b794f6)"
+                          : "linear-gradient(135deg, #00d4e5, #a78bfa)",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        transform: hoveredBtn === 'play' ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: hoveredBtn === 'play'
+                          ? "0 8px 24px rgba(0, 229, 255, 0.5)"
+                          : "0 4px 16px rgba(0,0,0,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>🎮</span>
+                      Play vs Computer
+                    </button>
+                    
+                    <button 
+                      onClick={onStartMultiplayer} 
+                      onMouseEnter={() => setHoveredBtn('multiplayer')}
+                      onMouseLeave={() => setHoveredBtn(null)}
+                      style={{
+                        padding: "18px 24px",
+                        borderRadius: 16,
+                        border: "none",
+                        background: hoveredBtn === 'multiplayer'
+                          ? "linear-gradient(135deg, #00e5ff, #b794f6)"
+                          : "linear-gradient(135deg, #00d4e5, #a78bfa)",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        transform: hoveredBtn === 'multiplayer' ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: hoveredBtn === 'multiplayer'
+                          ? "0 8px 24px rgba(0, 229, 255, 0.5)"
+                          : "0 4px 16px rgba(0,0,0,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>👥</span>
+                      Multiplayer
+                    </button>
+                    
+                    <button 
+                      onClick={() => setShowHowTo(true)} 
+                      onMouseEnter={() => setHoveredBtn('howto')}
+                      onMouseLeave={() => setHoveredBtn(null)}
+                      style={{
+                        padding: "18px 24px",
+                        borderRadius: 16,
+                        border: "none",
+                        background: hoveredBtn === 'howto'
+                          ? "linear-gradient(135deg, #b794f6, #f472b6)"
+                          : "linear-gradient(135deg, #a78bfa, #ec4899)",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        transform: hoveredBtn === 'howto' ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: hoveredBtn === 'howto'
+                          ? "0 8px 24px rgba(183, 148, 246, 0.5)"
+                          : "0 4px 16px rgba(0,0,0,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>🎓</span>
+                      How to Play
+                    </button>
+                    
+                    <a href="https://teachablemachine.withgoogle.com/" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
 <button 
   onMouseEnter={() => setHoveredBtn('about')}
   onMouseLeave={() => setHoveredBtn(null)}
@@ -576,8 +576,8 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     borderRadius: 16,
     border: "none",
     background: hoveredBtn === 'about'
-      ? "linear-gradient(135deg, #4a6741, #3a5434)"
-      : "linear-gradient(135deg, #3a5434, #2d4a2a)",
+      ? "linear-gradient(135deg, #1a1f3a, #2d1b4e)"
+      : "linear-gradient(135deg, #0a1628, #1a1f3a)",
     color: "#fff",
     fontWeight: 800,
     fontSize: 16,
@@ -585,7 +585,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     transition: "all 0.2s ease",
     transform: hoveredBtn === 'about' ? 'scale(1.02)' : 'scale(1)',
     boxShadow: hoveredBtn === 'about'
-      ? "0 8px 24px rgba(74, 103, 65, 0.5)"
+      ? "0 8px 24px rgba(0, 229, 255, 0.3)"
       : "0 4px 16px rgba(0,0,0,0.3)",
     display: "flex",
     alignItems: "center",
@@ -606,7 +606,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           background: "rgba(0,0,0,0.2)",
           borderRadius: 16,
           padding: 24,
-          border: "1px solid rgba(139, 195, 74, 0.2)"
+          border: "1px solid rgba(0, 229, 255, 0.2)"
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Camera Feed */}
@@ -738,7 +738,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
                                 height: '100%',
                                 width: `${percentage}%`,
                                 background: isHighest 
-                                  ? 'linear-gradient(90deg, #667eea, #764ba2)'
+                                  ? 'linear-gradient(90deg, #00e5ff, #b794f6)'
                                   : 'rgba(255,255,255,0.3)',
                                 transition: 'width 0.3s ease',
                                 borderRadius: 3
@@ -823,11 +823,11 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           }}>
             <div style={{
               width: "min(720px, 92vw)",
-              background: "#f0f0e8",
-              border: "1px solid rgba(139, 195, 74, 0.3)",
+              background: "rgba(26, 31, 58, 0.95)",
+              border: "1px solid rgba(0, 229, 255, 0.3)",
               borderRadius: 16,
               padding: 22,
-              color: "#2d4a2a"
+              color: "#fff"
             }}>
               <h3 style={{ marginTop: 0 }}>How to Play</h3>
               <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6, opacity: 0.9 }}>
@@ -892,8 +892,8 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
 const primaryBtnStyle = {
   padding: "12px 18px",
   borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.35)",
-  background: "linear-gradient(135deg, #667eea, #764ba2)",
+  border: "1px solid rgba(0, 229, 255, 0.35)",
+  background: "linear-gradient(135deg, #00e5ff, #b794f6)",
   color: "#fff",
   fontWeight: 800,
   letterSpacing: 0.4,

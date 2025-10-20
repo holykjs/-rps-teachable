@@ -349,7 +349,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(ellipse at center, #4a6741 0%, #2d4a2a 50%, #1a3319 100%)',
+    background: 'radial-gradient(ellipse at center, #1a1f3a 0%, #0a1628 50%, #2d1b4e 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -357,7 +357,7 @@ const styles = {
     backdropFilter: 'blur(8px)'
   },
   modal: {
-    background: 'rgba(45, 74, 42, 0.6)',
+    background: 'rgba(26, 31, 58, 0.6)',
     backdropFilter: 'blur(20px)',
     borderRadius: 24,
     padding: 0,
@@ -365,13 +365,13 @@ const styles = {
     width: '90%',
     maxHeight: '80vh',
     overflow: 'hidden',
-    border: '2px solid rgba(139, 195, 74, 0.3)',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(139, 195, 74, 0.2)'
+    border: '2px solid rgba(0, 229, 255, 0.3)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0, 229, 255, 0.2)'
   },
   header: {
     background: 'rgba(0,0,0,0.2)',
     padding: '20px 24px',
-    borderBottom: '1px solid rgba(139, 195, 74, 0.2)',
+    borderBottom: '1px solid rgba(0, 229, 255, 0.2)',
     textAlign: 'center',
     color: '#fff'
   },
@@ -392,7 +392,7 @@ const styles = {
     width: '100%',
     padding: '12px 16px',
     borderRadius: 12,
-    border: '1px solid rgba(139, 195, 74, 0.3)',
+    border: '1px solid rgba(0, 229, 255, 0.3)',
     background: 'rgba(0,0,0,0.3)',
     color: '#fff',
     fontSize: 16,
@@ -408,19 +408,19 @@ const styles = {
     padding: '12px 20px',
     borderRadius: 12,
     border: 'none',
-    background: 'linear-gradient(135deg, #8bc34a, #689f38)',
+    background: 'linear-gradient(135deg, #00e5ff, #b794f6)',
     color: '#fff',
     fontWeight: 700,
     cursor: 'pointer',
     fontSize: 14,
     transition: 'all 0.2s ease',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+    boxShadow: '0 4px 12px rgba(0, 229, 255, 0.3)'
   },
   secondaryButton: {
     flex: 1,
     padding: '12px 20px',
     borderRadius: 12,
-    border: '1px solid rgba(139, 195, 74, 0.3)',
+    border: '1px solid rgba(0, 229, 255, 0.3)',
     background: 'rgba(0,0,0,0.3)',
     color: '#fff',
     fontWeight: 700,
@@ -439,13 +439,13 @@ const styles = {
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
-    border: '1px solid rgba(139, 195, 74, 0.2)'
+    border: '1px solid rgba(0, 229, 255, 0.2)'
   },
   roomCode: {
     fontFamily: 'monospace',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#8bc34a'
+    color: '#00e5ff'
   },
   shareCode: {
     display: 'flex',
@@ -460,15 +460,15 @@ const styles = {
     fontFamily: 'monospace',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#8bc34a',
+    color: '#00e5ff',
     flex: 1,
-    border: '1px solid rgba(139, 195, 74, 0.3)'
+    border: '1px solid rgba(0, 229, 255, 0.3)'
   },
   copyButton: {
     padding: '8px 12px',
     borderRadius: 6,
-    border: '1px solid rgba(139, 195, 74, 0.3)',
-    background: 'linear-gradient(135deg, #8bc34a, #689f38)',
+    border: '1px solid rgba(0, 229, 255, 0.3)',
+    background: 'linear-gradient(135deg, #00e5ff, #b794f6)',
     color: '#fff',
     cursor: 'pointer',
     fontSize: 12,
@@ -491,10 +491,10 @@ const styles = {
     background: 'rgba(0,0,0,0.2)',
     borderRadius: 8,
     marginBottom: 8,
-    border: '1px solid rgba(139, 195, 74, 0.2)'
+    border: '1px solid rgba(0, 229, 255, 0.2)'
   },
   hostBadge: {
-    background: '#8bc34a',
+    background: '#00e5ff',
     color: '#000',
     padding: '2px 8px',
     borderRadius: 4,
@@ -504,8 +504,8 @@ const styles = {
   spinner: {
     width: 40,
     height: 40,
-    border: '4px solid rgba(139, 195, 74, 0.2)',
-    borderTop: '4px solid #8bc34a',
+    border: '4px solid rgba(0, 229, 255, 0.2)',
+    borderTop: '4px solid #00e5ff',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     margin: '0 auto 20px'
@@ -528,7 +528,7 @@ const styles = {
     flex: 1,
     padding: '12px 20px',
     borderRadius: 12,
-    border: '1px solid rgba(139, 195, 74, 0.3)',
+    border: '1px solid rgba(0, 229, 255, 0.3)',
     background: 'rgba(0,0,0,0.3)',
     color: '#fff',
     fontWeight: 700,
