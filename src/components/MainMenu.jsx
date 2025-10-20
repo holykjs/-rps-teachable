@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import * as tmImage from "@teachablemachine/image";
-import * as handpose from "@tensorflow-models/handpose";
+import * as handPoseDetection from "@tensorflow-models/hand-pose-detection";
 import { drawHand } from "../utilities";
 
 const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
@@ -13,6 +13,8 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
   const [error, setError] = useState(null);
   const [localPredictions, setLocalPredictions] = useState([]);
   const [localGesture, setLocalGesture] = useState(null);
+  const [currentGesture, setCurrentGesture] = useState(null);
+  const [gestureCount, setGestureCount] = useState({ Rock: 0, Paper: 0, Scissors: 0 });
   const [handposeModel, setHandposeModel] = useState(null);
   const [tmModel, setTmModel] = useState(null);
   const [modelLoading, setModelLoading] = useState(false);
@@ -41,8 +43,19 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           const loaded = await tmImage.load(modelURL, metadataURL);
           setTmModel(loaded);
           
-          const handModel = await handpose.load();
-          setHandposeModel(handModel);
+          // Load hand detector (MediaPipe runtime) for hand tracking visualization
+          const detectorConfig = {
+            runtime: 'mediapipe',
+            solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
+            modelType: 'full',
+            maxHands: 1,
+          };
+          const detector = await handPoseDetection.createDetector(
+            handPoseDetection.SupportedModels.MediaPipeHands,
+            detectorConfig
+          );
+          setHandposeModel(detector);
+          console.log("MediaPipe Hands detector loaded");
           
           setModelLoading(false);
         } catch (err) {
@@ -74,62 +87,6 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     }
   }, [testActive, tmModel, modelLoading]);
 
-  const startCamera = async () => {
-    try {
-      setError(null);
-      
-      if (!webcamRef.current) {
-        setError("Video element not ready. Please try again.");
-        return;
-      }
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 640 }, 
-          height: { ideal: 480 }, 
-          facingMode: 'user' 
-        } 
-      });
-      
-      webcamRef.current.srcObject = stream;
-      await webcamRef.current.play();
-      setCameraActive(true);
-      
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
-      
-      setTimeout(() => {
-        detectionIntervalRef.current = setInterval(detectHandsAndGestures, 100);
-      }, 500);
-    } catch (err) {
-      console.error("Camera error:", err);
-      if (err.name === 'NotAllowedError') {
-        setError("Camera access denied. Please allow camera permissions.");
-      } else if (err.name === 'NotFoundError') {
-        setError("No camera found. Please connect a camera.");
-      } else {
-        setError(`Camera error: ${err.message}`);
-      }
-      setCameraActive(false);
-    }
-  };
-
-  const stopCamera = () => {
-    if (webcamRef.current && webcamRef.current.srcObject) {
-      const tracks = webcamRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-      webcamRef.current.srcObject = null;
-    }
-    if (detectionIntervalRef.current) {
-      clearInterval(detectionIntervalRef.current);
-      detectionIntervalRef.current = null;
-    }
-    setCameraActive(false);
-    setLocalGesture(null);
-    setLocalPredictions([]);
-  };
-
   const detectHandsAndGestures = async () => {
     if (!webcamRef.current || !canvasRef.current) return;
 
@@ -144,9 +101,14 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     try {
+      // Detect hands using MediaPipe detector for visualization (if loaded)
       let hands = [];
       if (handposeModel) {
-        hands = await handposeModel.estimateHands(video);
+        const results = await handposeModel.estimateHands(video, { flipHorizontal: false });
+        // Convert to the { landmarks: [[x,y,z], ...] } shape expected by drawHand and ROI code
+        hands = (results || []).map(h => ({
+          landmarks: (h.keypoints || []).map(kp => [kp.x, kp.y, kp.z ?? 0])
+        }));
         if (hands.length > 0) {
           drawHand(hands, ctx);
         }
@@ -163,7 +125,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           inputForModel = off;
         }
 
-        const rawPreds = await tmImage.predict(inputForModel);
+        const rawPreds = await tmModel.predict(inputForModel);
         const smoothed = smoothPredictions(rawPreds);
         setLocalPredictions(smoothed);
 
@@ -238,6 +200,76 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
       return topClass;
     }
     return null;
+  };
+  
+  const startCamera = async () => {
+    try {
+      setError(null);
+      console.log("Requesting camera access...");
+      
+      if (!webcamRef.current) {
+        console.error("Video element not found");
+        setError("Video element not ready. Please try again.");
+        return;
+      }
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 640 }, 
+          height: { ideal: 480 }, 
+          facingMode: 'user' 
+        } 
+      });
+      
+      console.log("Camera stream obtained:", stream);
+      webcamRef.current.srcObject = stream;
+      await webcamRef.current.play();
+      setCameraActive(true);
+      console.log("Camera started successfully");
+      
+      // Start hand detection loop
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+      }
+      
+      // Wait a bit for video to be fully ready
+      setTimeout(() => {
+        detectionIntervalRef.current = setInterval(detectHandsAndGestures, 100);
+        console.log("Detection loop started");
+      }, 500);
+    } catch (err) {
+      console.error("Camera error:", err);
+      if (err.name === 'NotAllowedError') {
+        setError("Camera access denied. Please allow camera permissions in your browser.");
+      } else if (err.name === 'NotFoundError') {
+        setError("No camera found. Please connect a camera.");
+      } else {
+        setError(`Camera error: ${err.message}`);
+      }
+      setCameraActive(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (webcamRef.current && webcamRef.current.srcObject) {
+      const tracks = webcamRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      webcamRef.current.srcObject = null;
+    }
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
+    // Dispose the detector if present
+    try {
+      if (handposeModel && typeof handposeModel.dispose === 'function') {
+        handposeModel.dispose();
+      }
+    } catch (_) {}
+    setCameraActive(false);
+    setCurrentGesture(null);
+    setLocalGesture(null);
+    setLocalPredictions([]);
   };
 
   if (!isVisible) return null;
