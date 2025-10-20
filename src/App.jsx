@@ -24,7 +24,7 @@ import "./responsive.css";
  * Configuration from environment variables
  * Create .env file to customize these values
  */
-const MODEL_BASE_URL = import.meta.env.VITE_MODEL_URL || "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
+const MODEL_BASE_URL = import.meta.env.VITE_MODEL_URL || "https://teachablemachine.withgoogle.com/models/qrRvpV3lX/";
 const WIN_SCORE = parseInt(import.meta.env.VITE_WIN_SCORE) || 5;
 
 function AppContent() {
