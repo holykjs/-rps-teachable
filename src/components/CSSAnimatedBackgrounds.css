@@ -1,0 +1,247 @@
+/* CSS Animated Body Backgrounds Collection */
+
+/* 1. Gradient Wave Animation */
+.gradient-wave-bg {
+  background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+  background-size: 400% 400%;
+  animation: gradientWave 15s ease infinite;
+}
+
+@keyframes gradientWave {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 2. Floating Orbs */
+.floating-orbs-bg {
+  background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%),
+              linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  animation: floatingOrbs 20s ease-in-out infinite;
+}
+
+@keyframes floatingOrbs {
+  0%, 100% { 
+    background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%;
+  }
+  25% { 
+    background-position: 100% 0%, 0% 100%, 80% 20%, 0% 0%;
+  }
+  50% { 
+    background-position: 100% 100%, 0% 0%, 20% 80%, 0% 0%;
+  }
+  75% { 
+    background-position: 0% 100%, 100% 0%, 60% 60%, 0% 0%;
+  }
+}
+
+/* 3. Pulsing Neural Network */
+.neural-pulse-bg {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 75% 75%, rgba(118, 75, 162, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 75% 25%, rgba(240, 147, 251, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 25% 75%, rgba(245, 87, 108, 0.1) 0%, transparent 25%),
+    linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  background-size: 200px 200px, 300px 300px, 250px 250px, 180px 180px, 100% 100%;
+  animation: neuralPulse 8s ease-in-out infinite;
+}
+
+@keyframes neuralPulse {
+  0%, 100% { 
+    background-size: 200px 200px, 300px 300px, 250px 250px, 180px 180px, 100% 100%;
+    opacity: 0.8;
+  }
+  50% { 
+    background-size: 250px 250px, 350px 350px, 300px 300px, 220px 220px, 100% 100%;
+    opacity: 1;
+  }
+}
+
+/* 4. Morphing Gradient Mesh */
+.morphing-mesh-bg {
+  background: 
+    linear-gradient(45deg, transparent 30%, rgba(102, 126, 234, 0.1) 30%, rgba(102, 126, 234, 0.1) 70%, transparent 70%),
+    linear-gradient(-45deg, transparent 30%, rgba(118, 75, 162, 0.1) 30%, rgba(118, 75, 162, 0.1) 70%, transparent 70%),
+    linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+  background-size: 60px 60px, 80px 80px, 100% 100%;
+  animation: morphingMesh 12s linear infinite;
+}
+
+@keyframes morphingMesh {
+  0% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+  25% { background-position: 100% 0%, -100% 0%, 0% 0%; }
+  50% { background-position: 100% 100%, -100% -100%, 0% 0%; }
+  75% { background-position: 0% 100%, 0% -100%, 0% 0%; }
+  100% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+}
+
+/* 5. Breathing Glow */
+.breathing-glow-bg {
+  background: 
+    radial-gradient(ellipse at center, rgba(102, 126, 234, 0.15) 0%, transparent 70%),
+    linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+  animation: breathingGlow 6s ease-in-out infinite;
+}
+
+@keyframes breathingGlow {
+  0%, 100% { 
+    background-size: 100% 100%, 100% 100%;
+    filter: brightness(1);
+  }
+  50% { 
+    background-size: 120% 120%, 100% 100%;
+    filter: brightness(1.2);
+  }
+}
+
+/* 6. Particle Stream */
+.particle-stream-bg {
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, rgba(102, 126, 234, 0.4), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(118, 75, 162, 0.4), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(240, 147, 251, 0.4), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(245, 87, 108, 0.4), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(102, 126, 234, 0.4), transparent);
+  background-color: #0a0a0a;
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: particleStream 20s linear infinite;
+}
+
+@keyframes particleStream {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200px 100px; }
+}
+
+/* 7. Liquid Waves */
+.liquid-waves-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-waves-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse 800px 600px at 50% 0%, rgba(240, 147, 251, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 600px 400px at 0% 100%, rgba(245, 87, 108, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 700px 500px at 100% 50%, rgba(79, 172, 254, 0.2) 0%, transparent 50%);
+  animation: liquidWaves 15s ease-in-out infinite;
+}
+
+@keyframes liquidWaves {
+  0%, 100% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+  33% { 
+    transform: scale(1.1) rotate(120deg);
+    opacity: 0.6;
+  }
+  66% { 
+    transform: scale(0.9) rotate(240deg);
+    opacity: 1;
+  }
+}
+
+/* 8. Matrix Digital Rain Effect */
+.matrix-rain-bg {
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-rain-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(transparent 70%, rgba(0, 255, 65, 0.03) 70%, rgba(0, 255, 65, 0.05) 85%, transparent 85%),
+    linear-gradient(90deg, transparent 70%, rgba(0, 255, 65, 0.03) 70%, rgba(0, 255, 65, 0.05) 85%, transparent 85%);
+  background-size: 50px 50px, 50px 50px;
+  animation: matrixRain 3s linear infinite;
+}
+
+@keyframes matrixRain {
+  0% { background-position: 0% 0%, 0% 0%; }
+  100% { background-position: 0% 100%, 100% 0%; }
+}
+
+/* 9. Cosmic Energy */
+.cosmic-energy-bg {
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.3) 0%, transparent 30%),
+    radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.3) 0%, transparent 30%),
+    radial-gradient(circle at 60% 20%, rgba(79, 172, 254, 0.2) 0%, transparent 40%),
+    radial-gradient(circle at 40% 80%, rgba(245, 87, 108, 0.2) 0%, transparent 40%),
+    conic-gradient(from 0deg at 50% 50%, #0a0a0a, #1a1a2e, #16213e, #0f3460, #533483, #0a0a0a);
+  animation: cosmicEnergy 25s linear infinite;
+}
+
+@keyframes cosmicEnergy {
+  0% { 
+    background-position: 0% 0%, 100% 100%, 0% 100%, 100% 0%, 50% 50%;
+    filter: hue-rotate(0deg);
+  }
+  25% { 
+    background-position: 100% 0%, 0% 100%, 100% 100%, 0% 0%, 50% 50%;
+    filter: hue-rotate(90deg);
+  }
+  50% { 
+    background-position: 100% 100%, 0% 0%, 100% 0%, 0% 100%, 50% 50%;
+    filter: hue-rotate(180deg);
+  }
+  75% { 
+    background-position: 0% 100%, 100% 0%, 0% 0%, 100% 100%, 50% 50%;
+    filter: hue-rotate(270deg);
+  }
+  100% { 
+    background-position: 0% 0%, 100% 100%, 0% 100%, 100% 0%, 50% 50%;
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* 10. Holographic Shimmer */
+.holographic-shimmer-bg {
+  background: 
+    linear-gradient(45deg, 
+      rgba(102, 126, 234, 0.1) 0%, 
+      rgba(118, 75, 162, 0.1) 25%, 
+      rgba(240, 147, 251, 0.1) 50%, 
+      rgba(79, 172, 254, 0.1) 75%, 
+      rgba(102, 126, 234, 0.1) 100%
+    ),
+    linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  background-size: 200% 200%, 100% 100%;
+  animation: holographicShimmer 8s ease-in-out infinite;
+}
+
+@keyframes holographicShimmer {
+  0%, 100% { 
+    background-position: 0% 0%, 0% 0%;
+    filter: hue-rotate(0deg) saturate(1);
+  }
+  25% { 
+    background-position: 100% 0%, 0% 0%;
+    filter: hue-rotate(90deg) saturate(1.2);
+  }
+  50% { 
+    background-position: 100% 100%, 0% 0%;
+    filter: hue-rotate(180deg) saturate(0.8);
+  }
+  75% { 
+    background-position: 0% 100%, 0% 0%;
+    filter: hue-rotate(270deg) saturate(1.1);
+  }
+}

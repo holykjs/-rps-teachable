@@ -17,6 +17,7 @@ import GestureIndicator from "./components/GestureIndicator";
 import GameStatusBar from "./components/GameStatusBar";
 import ParticleEffect from "./components/ParticleEffect";
 import GesturePreview from "./components/GesturePreview";
+// Using CSS animated backgrounds instead of component backgrounds
 import "./App.css";
 import "./responsive.css";
 
@@ -171,12 +172,13 @@ function AppContent() {
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", 
       height: "100%", 
       minHeight: "100vh", 
-      background: "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)", 
       display: "flex", 
       flexDirection: "column",
       position: "relative",
       overflow: "hidden"
     }}>
+      {/* CSS Animated Background is applied to body element */}
+      
       {/* Game Header */}
       <AIErrorBoundary onRetry={handleRetryModels}>
         <GameHeader

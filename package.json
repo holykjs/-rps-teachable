@@ -23,8 +23,10 @@
     "@tensorflow/tfjs-converter": "^4.22.0",
     "@tensorflow/tfjs-core": "^4.22.0",
     "fingerpose": "^0.1.0",
+    "p5": "^2.0.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-p5": "^1.4.1",
     "react-webcam": "^7.1.1",
     "socket.io-client": "^4.7.2"
   },
