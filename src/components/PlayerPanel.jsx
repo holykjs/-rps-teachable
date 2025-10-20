@@ -19,7 +19,8 @@ const PlayerPanel = ({
   getEmoji, 
   getComputerImage,
   opponentName = "Computer",
-  waitingForOpponent = false
+  waitingForOpponent = false,
+  playerName = "YOU"
 }) => {
   const isHuman = type === 'human';
   const isOpponent = type === 'opponent';
@@ -50,7 +51,7 @@ const PlayerPanel = ({
             {isHuman ? "👤" : isOpponent ? "👥" : "🤖"}
           </div>
           <span style={{ letterSpacing: "0.5px" }}>
-            {isHuman ? "YOU" : isOpponent ? opponentName.toUpperCase() : "AI"}
+            {isHuman ? playerName.toUpperCase() : isOpponent ? opponentName.toUpperCase() : "AI"}
           </span>
         </div>
         <div style={{ 

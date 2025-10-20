@@ -4,9 +4,10 @@ const MultiplayerLobby = ({
   multiplayer, 
   onStartSinglePlayer, 
   onGameReady,
-  onBackToMenu
+  onBackToMenu,
+  defaultPlayerName = ''
 }) => {
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState(defaultPlayerName);
   const [roomCode, setRoomCode] = useState('');
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -348,7 +349,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0, 0, 0, 0.8)',
+    background: 'radial-gradient(ellipse at center, #4a6741 0%, #2d4a2a 50%, #1a3319 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -356,21 +357,23 @@ const styles = {
     backdropFilter: 'blur(8px)'
   },
   modal: {
-    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-    borderRadius: 16,
+    background: 'rgba(45, 74, 42, 0.6)',
+    backdropFilter: 'blur(20px)',
+    borderRadius: 24,
     padding: 0,
     maxWidth: 400,
     width: '90%',
     maxHeight: '80vh',
     overflow: 'hidden',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+    border: '2px solid rgba(139, 195, 74, 0.3)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(139, 195, 74, 0.2)'
   },
   header: {
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: 'rgba(0,0,0,0.2)',
     padding: '20px 24px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    textAlign: 'center'
+    borderBottom: '1px solid rgba(139, 195, 74, 0.2)',
+    textAlign: 'center',
+    color: '#fff'
   },
   content: {
     padding: '24px',
@@ -388,9 +391,9 @@ const styles = {
   input: {
     width: '100%',
     padding: '12px 16px',
-    borderRadius: 8,
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    background: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    border: '1px solid rgba(139, 195, 74, 0.3)',
+    background: 'rgba(0,0,0,0.3)',
     color: '#fff',
     fontSize: 16,
     boxSizing: 'border-box'
@@ -403,23 +406,24 @@ const styles = {
   primaryButton: {
     flex: 1,
     padding: '12px 20px',
-    borderRadius: 8,
+    borderRadius: 12,
     border: 'none',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    background: 'linear-gradient(135deg, #8bc34a, #689f38)',
     color: '#fff',
-    fontWeight: 600,
+    fontWeight: 700,
     cursor: 'pointer',
     fontSize: 14,
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
   },
   secondaryButton: {
     flex: 1,
     padding: '12px 20px',
-    borderRadius: 8,
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    background: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    border: '1px solid rgba(139, 195, 74, 0.3)',
+    background: 'rgba(0,0,0,0.3)',
     color: '#fff',
-    fontWeight: 600,
+    fontWeight: 700,
     cursor: 'pointer',
     fontSize: 14,
     transition: 'all 0.2s ease'
@@ -431,16 +435,17 @@ const styles = {
     color: 'rgba(255, 255, 255, 0.6)'
   },
   roomInfo: {
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: 'rgba(0,0,0,0.2)',
     padding: 16,
-    borderRadius: 8,
-    marginBottom: 20
+    borderRadius: 12,
+    marginBottom: 20,
+    border: '1px solid rgba(139, 195, 74, 0.2)'
   },
   roomCode: {
     fontFamily: 'monospace',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4ade80'
+    color: '#8bc34a'
   },
   shareCode: {
     display: 'flex',
@@ -455,17 +460,19 @@ const styles = {
     fontFamily: 'monospace',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4ade80',
-    flex: 1
+    color: '#8bc34a',
+    flex: 1,
+    border: '1px solid rgba(139, 195, 74, 0.3)'
   },
   copyButton: {
     padding: '8px 12px',
     borderRadius: 6,
-    border: 'none',
-    background: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(139, 195, 74, 0.3)',
+    background: 'linear-gradient(135deg, #8bc34a, #689f38)',
     color: '#fff',
     cursor: 'pointer',
-    fontSize: 12
+    fontSize: 12,
+    fontWeight: 700
   },
   waitingText: {
     textAlign: 'center',
@@ -481,12 +488,13 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '8px 12px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 6,
-    marginBottom: 8
+    background: 'rgba(0,0,0,0.2)',
+    borderRadius: 8,
+    marginBottom: 8,
+    border: '1px solid rgba(139, 195, 74, 0.2)'
   },
   hostBadge: {
-    background: '#f59e0b',
+    background: '#8bc34a',
     color: '#000',
     padding: '2px 8px',
     borderRadius: 4,
@@ -496,8 +504,8 @@ const styles = {
   spinner: {
     width: 40,
     height: 40,
-    border: '4px solid rgba(255, 255, 255, 0.1)',
-    borderTop: '4px solid #667eea',
+    border: '4px solid rgba(139, 195, 74, 0.2)',
+    borderTop: '4px solid #8bc34a',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     margin: '0 auto 20px'
@@ -519,11 +527,11 @@ const styles = {
   homeButton: {
     flex: 1,
     padding: '12px 20px',
-    borderRadius: 8,
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    border: '1px solid rgba(139, 195, 74, 0.3)',
+    background: 'rgba(0,0,0,0.3)',
     color: '#fff',
-    fontWeight: 600,
+    fontWeight: 700,
     cursor: 'pointer',
     fontSize: 14,
     transition: 'all 0.2s ease'

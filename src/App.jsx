@@ -11,6 +11,7 @@ import PlayerPanel from "./components/PlayerPanel";
 import GameControls from "./components/GameControls";
 import CountdownOverlay from "./components/CountdownOverlay";
 import RoundResultOverlay from "./components/RoundResultOverlay";
+import LandingPage from "./components/LandingPage";
 import MainMenu from "./components/MainMenu";
 import MultiplayerLobby from "./components/MultiplayerLobby";
 import GestureIndicator from "./components/GestureIndicator";
@@ -29,7 +30,9 @@ const WIN_SCORE = parseInt(import.meta.env.VITE_WIN_SCORE) || 5;
 
 function AppContent() {
   // Custom hooks for AI model, game logic, and toast notifications
-  const [showMenu, setShowMenu] = useState(true);
+  const [showLanding, setShowLanding] = useState(true);
+  const [playerNickname, setPlayerNickname] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
   const [showMultiplayerLobby, setShowMultiplayerLobby] = useState(false);
   const [gameMode, setGameMode] = useState('single'); // 'single' or 'multiplayer'
   const {
@@ -155,6 +158,12 @@ function AppContent() {
     }
   };
 
+  const handleLandingStartGame = (nickname) => {
+    setPlayerNickname(nickname);
+    setShowLanding(false);
+    setShowMenu(true);
+  };
+
   // Keyboard navigation (after all functions are defined)
   const { shortcuts } = useKeyboardNavigation({
     onStartCamera: startWebcam,
@@ -171,7 +180,9 @@ function AppContent() {
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", 
       height: "100%", 
       minHeight: "100vh", 
-      background: "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)", 
+      background: "linear-gradient(135deg, #1a2e1a, #243324, #2d4a2a, #1f3a1f, #152815)", 
+      backgroundSize: "400% 400%",
+      animation: "gradientShift 15s ease infinite",
       display: "flex", 
       flexDirection: "column",
       position: "relative",
@@ -264,6 +275,7 @@ function AppContent() {
             gestureQuality={gestureQuality}
             predictions={predictions}
             getEmoji={getEmoji}
+            playerName={playerNickname || "YOU"}
           />
         </AIErrorBoundary>
 
@@ -334,6 +346,11 @@ function AppContent() {
         </button>
       )}
 
+      {/* Landing Page */}
+      {showLanding && (
+        <LandingPage onStartGame={handleLandingStartGame} />
+      )}
+
       {/* Main Menu Overlay */}
       <MainMenu
         isVisible={showMenu}
@@ -349,6 +366,7 @@ function AppContent() {
           onStartSinglePlayer={handleStartFromMenu}
           onGameReady={handleMultiplayerGameReady}
           onBackToMenu={handleBackToMenu}
+          defaultPlayerName={playerNickname}
         />
       )}
 
@@ -362,6 +380,11 @@ function AppContent() {
         @keyframes computerReveal {
           0% { transform: scale(0.8); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
       `}</style>
     </div>
