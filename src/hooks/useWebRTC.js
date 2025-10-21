@@ -10,12 +10,18 @@ export const useWebRTC = (socket, roomId, isHost) => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  // WebRTC configuration with STUN servers
+  // Enhanced WebRTC configuration for production
   const rtcConfig = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
-    ]
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' }
+    ],
+    iceCandidatePoolSize: 10,
+    bundlePolicy: 'max-bundle',
+    rtcpMuxPolicy: 'require'
   };
 
   // Initialize peer connection
@@ -50,8 +56,24 @@ export const useWebRTC = (socket, roomId, isHost) => {
       console.log('Connection state:', pc.connectionState);
       setIsConnected(pc.connectionState === 'connected');
       
-      if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-        setError('WebRTC connection failed');
+      if (pc.connectionState === 'failed') {
+        console.error('WebRTC connection failed, attempting to reconnect...');
+        setError('Connection failed, retrying...');
+        // Attempt to restart ICE
+        pc.restartIce();
+      } else if (pc.connectionState === 'disconnected') {
+        setError('Connection lost');
+      } else if (pc.connectionState === 'connected') {
+        setError(null); // Clear any previous errors
+      }
+    };
+
+    // Handle ICE connection state changes
+    pc.oniceconnectionstatechange = () => {
+      console.log('ICE connection state:', pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed') {
+        console.error('ICE connection failed, restarting ICE...');
+        pc.restartIce();
       }
     };
 
@@ -171,7 +193,17 @@ export const useWebRTC = (socket, roomId, isHost) => {
       
       // Host creates offer after both players are ready
       if (isHost) {
-        setTimeout(() => createOffer(), 1000); // Small delay to ensure both peers are ready
+        // Increased delay and retry mechanism for production
+        setTimeout(() => {
+          createOffer();
+          // Retry if connection fails after 5 seconds
+          setTimeout(() => {
+            if (!isConnected && peerConnectionRef.current?.connectionState !== 'connected') {
+              console.log('Retrying WebRTC connection...');
+              createOffer();
+            }
+          }, 5000);
+        }, 2000);
       }
     } catch (err) {
       console.error('Failed to initialize WebRTC:', err);
