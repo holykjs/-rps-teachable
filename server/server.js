@@ -2,20 +2,32 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 
+// Production configuration
+const PORT = process.env.PORT || 3001;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS ? 
+  process.env.ALLOWED_ORIGINS.split(',') : 
+  ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+
 // Configure CORS for Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"], // Vite dev server (multiple ports)
+    origin: ALLOWED_ORIGINS,
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
-app.use(cors());
+// Configure Express CORS
+app.use(cors({
+  origin: ALLOWED_ORIGINS,
+  credentials: true
+}));
 app.use(express.json());
 
 // Game state management
@@ -303,8 +315,11 @@ app.get('/health', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`🎮 RPS Multiplayer Server running on port ${PORT}`);
-  console.log(`🌐 CORS enabled for: http://localhost:5173`);
+  console.log(`🌐 CORS enabled for: ${ALLOWED_ORIGINS.join(', ')}`);
+  console.log(`🔧 Environment: ${NODE_ENV}`);
+  if (NODE_ENV === 'production') {
+    console.log(`🚀 Production server ready!`);
+  }
 });
