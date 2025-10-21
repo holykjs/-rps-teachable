@@ -177,13 +177,13 @@ const GameHeader = ({
         </div>
       )}
       
-      {error && (
+      {/* {error && (
         <ErrorDisplay 
           error={error}
           onRetry={onRetryModels}
           onDismiss={onDismissError}
         />
-      )}
+      )} */}
 
       {/* Modern Game Winner Banner */}
       {gameWinner && (

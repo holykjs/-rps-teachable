@@ -85,7 +85,7 @@ export const useEnhancedGameLogic = (winScore = 5, multiplayer = null) => {
         ...prev.slice(0, 9),
       ]);
     }
-  }, [multiplayer?.roundResult, multiplayer, winScore]);
+  }, [multiplayer?.roundResult, winScore]); // Remove multiplayer object dependency to prevent infinite re-renders
 
   // Game Logic Functions
   const determineWinner = (human, computer) => {
@@ -120,7 +120,7 @@ export const useEnhancedGameLogic = (winScore = 5, multiplayer = null) => {
   };
 
   const captureGestures = (computerChoice, humanResult) => {
-    if (!humanResult || humanResult.confidence < 0.6) {
+    if (!humanResult || humanResult.confidence < 0.5) {
       return { success: false, error: "Human gesture not detected clearly! Try again." };
     }
 

@@ -11,8 +11,8 @@ const GestureIndicator = ({ gesture, confidence, isActive }) => {
   };
 
   const getConfidenceColor = (confidence) => {
-    if (confidence >= 0.8) return '#10b981'; // Green
-    if (confidence >= 0.6) return '#f59e0b'; // Yellow
+    if (confidence >= 0.7) return '#10b981'; // Green
+    if (confidence >= 0.5) return '#f59e0b'; // Yellow
     return '#ef4444'; // Red
   };
 

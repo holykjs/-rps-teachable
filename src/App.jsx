@@ -145,6 +145,11 @@ function AppContent() {
     if (!isWebcamOn) {
       toast.info("Tip: Start your camera to begin playing!");
     }
+    
+    // Initialize WebRTC for guests when game is ready
+    if (multiplayer.gameMode === 'guest' && multiplayer.webrtc?.initializeWebRTC) {
+      multiplayer.webrtc.initializeWebRTC();
+    }
   };
 
   const handleBackToMenu = () => {
@@ -279,6 +284,10 @@ function AppContent() {
           getComputerImage={getComputerImage}
           opponentName={isMultiplayerMode ? opponentName : "Computer"}
           waitingForOpponent={waitingForOpponent}
+          isMultiplayerMode={isMultiplayerMode}
+          remoteStream={multiplayer.webrtc?.remoteStream}
+          webrtcConnected={multiplayer.webrtc?.isConnected}
+          webrtcError={multiplayer.webrtc?.error}
         />
       </div>
 

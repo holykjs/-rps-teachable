@@ -1,6 +1,7 @@
 import React from 'react';
 import WebcamFeed from './WebcamFeed';
 import ComputerDisplay from './ComputerDisplay';
+import RemoteWebcamFeed from './RemoteWebcamFeed';
 
 const PlayerPanel = ({ 
   type, 
@@ -20,7 +21,12 @@ const PlayerPanel = ({
   getComputerImage,
   opponentName = "Computer",
   waitingForOpponent = false,
-  playerName = "YOU"
+  playerName = "YOU",
+  // WebRTC props for remote webcam
+  remoteStream = null,
+  webrtcConnected = false,
+  webrtcError = null,
+  isMultiplayerMode = false
 }) => {
   const isHuman = type === 'human';
   const isOpponent = type === 'opponent';
@@ -81,6 +87,13 @@ const PlayerPanel = ({
             gestureQuality={gestureQuality}
             predictions={predictions}
             getEmoji={getEmoji}
+          />
+        ) : isOpponent && isMultiplayerMode ? (
+          <RemoteWebcamFeed
+            remoteStream={remoteStream}
+            isConnected={webrtcConnected}
+            opponentName={opponentName}
+            error={webrtcError}
           />
         ) : (
           <ComputerDisplay

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
+import { useWebRTC } from './useWebRTC';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
@@ -24,6 +25,14 @@ export const useMultiplayer = () => {
   
   const socketRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+
+  // Helper functions (moved up to use in WebRTC)
+  const isHost = gameMode === 'host';
+  const isGuest = gameMode === 'guest';
+  const isMultiplayer = gameMode !== 'single';
+  
+  // WebRTC integration
+  const webrtc = useWebRTC(socket, roomId, isHost);
 
   // Initialize socket connection
   const connectToServer = useCallback(() => {
@@ -168,7 +177,12 @@ export const useMultiplayer = () => {
   const startGame = useCallback(() => {
     if (!socket || gameMode !== 'host') return;
     socket.emit('start-game');
-  }, [socket, gameMode]);
+    
+    // Initialize WebRTC when game starts
+    if (webrtc.initializeWebRTC) {
+      webrtc.initializeWebRTC();
+    }
+  }, [socket, gameMode, webrtc]);
 
   const sendMove = useCallback((gesture, confidence) => {
     if (!socket || gameStatus !== 'playing') return;
@@ -203,10 +217,7 @@ export const useMultiplayer = () => {
     leaveRoom();
   }, [leaveRoom]);
 
-  // Helper functions
-  const isHost = gameMode === 'host';
-  const isGuest = gameMode === 'guest';
-  const isMultiplayer = gameMode !== 'single';
+  // Helper functions (variables moved up, only derived values here)
   const canStartGame = isHost && room?.isFull && gameStatus === 'ready';
   const canResetGame = isHost && gameStatus === 'finished';
 
@@ -284,6 +295,9 @@ export const useMultiplayer = () => {
     getPlayerPosition,
     getOpponentMove,
     getPlayerMove,
-    getRoundWinner
+    getRoundWinner,
+    
+    // WebRTC
+    webrtc
   };
 };

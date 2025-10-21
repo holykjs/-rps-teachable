@@ -1,6 +1,9 @@
 import React from 'react';
 
 const ErrorDisplay = ({ error, onRetry, onDismiss }) => {
+  // Disabled: Hide all error displays
+  return null;
+  
   if (!error) return null;
 
   const isStringError = typeof error === 'string';

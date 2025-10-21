@@ -12,8 +12,9 @@ A real-time Rock Paper Scissors game with AI gesture recognition and LAN multipl
 - **Temporal Smoothing** - 8-frame history with consensus threshold for accuracy
 - **Gesture Analytics** - Performance metrics and improvement recommendations
 
-### **LAN Multiplayer Mode**
-- **Real-time Multiplayer** - Play against friends on the same network
+### **Multiplayer Mode with Dual Webcam**
+- **Real-time Multiplayer** - Play against friends anywhere in the world
+- **Dual Webcam Streaming** - See each other's live video feeds via WebRTC
 - **Room System** - Create/join games with 6-digit room codes
 - **Cross-device Support** - Works on desktop and mobile browsers
 - **Synchronized Gameplay** - Real-time gesture recognition for both players

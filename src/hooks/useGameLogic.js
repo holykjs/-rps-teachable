@@ -48,7 +48,7 @@ export const useGameLogic = (winScore = 5) => {
   };
 
   const captureGestures = (computerChoice, humanResult) => {
-    if (!humanResult || humanResult.confidence < 0.6) {
+    if (!humanResult || humanResult.confidence < 0.5) {
       return { success: false, error: "Human gesture not detected clearly! Try again." };
     }
 

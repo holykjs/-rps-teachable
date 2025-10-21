@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // Configure CORS for Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173", // Vite dev server
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"], // Vite dev server (multiple ports)
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -236,6 +236,22 @@ io.on('connection', (socket) => {
     room.resetRound();
     
     io.to(playerData.roomId).emit('game-reset', getRoomData(room));
+  });
+
+  // WebRTC Signaling handlers
+  socket.on('webrtc-offer', ({ roomId, offer }) => {
+    console.log(`WebRTC offer from ${socket.id} in room ${roomId}`);
+    socket.to(roomId).emit('webrtc-offer', offer);
+  });
+
+  socket.on('webrtc-answer', ({ roomId, answer }) => {
+    console.log(`WebRTC answer from ${socket.id} in room ${roomId}`);
+    socket.to(roomId).emit('webrtc-answer', answer);
+  });
+
+  socket.on('ice-candidate', ({ roomId, candidate }) => {
+    console.log(`ICE candidate from ${socket.id} in room ${roomId}`);
+    socket.to(roomId).emit('ice-candidate', { candidate });
   });
 
   // Handle disconnection
