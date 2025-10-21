@@ -366,7 +366,12 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
             fontSize: 32, 
             fontWeight: 900, 
             letterSpacing: 0.5,
-            textShadow: "0 2px 8px rgba(0,0,0,0.3)"
+            background: "linear-gradient(90deg, #00e5ff 0%, #b794f6 25%, #f472b6 50%, #b794f6 75%, #00e5ff 100%)",
+            backgroundSize: "200% auto",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            animation: "gradientMove 3s ease infinite"
           }}>
             Rock Paper Scissors AI
           </h2>
@@ -883,6 +888,17 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           0% { transform: scale(0.8); opacity: 0; }
           50% { transform: scale(1.1); }
           100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes gradientMove {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
         }
       `}</style>
     </div>

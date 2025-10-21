@@ -72,14 +72,13 @@ const LandingPage = ({ onStartGame }) => {
           margin: "0 0 24px",
           fontSize: "clamp(32px, 8vw, 72px)",
           fontWeight: 900,
-          background: "linear-gradient(135deg, #00e5ff 0%, #b794f6 50%, #f472b6 100%)",
+          background: "linear-gradient(90deg, #00e5ff 0%, #b794f6 25%, #f472b6 50%, #b794f6 75%, #00e5ff 100%)",
+          backgroundSize: "200% auto",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
-          MozBackgroundClip: "text",
-          MozTextFillColor: "transparent",
           backgroundClip: "text",
-          color: "transparent",
-          lineHeight: 1.2
+          lineHeight: 1.2,
+          animation: "gradientMove 3s ease infinite"
         }}>
           Beat the AI at Rock Paper Scissors
         </h1>
@@ -200,8 +199,13 @@ const LandingPage = ({ onStartGame }) => {
           <h2 style={{
             fontSize: "clamp(32px, 6vw, 48px)",
             fontWeight: 900,
-            color: "#fff",
-            marginBottom: 16
+            background: "linear-gradient(90deg, #00e5ff 0%, #b794f6 25%, #f472b6 50%, #b794f6 75%, #00e5ff 100%)",
+            backgroundSize: "200% auto",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            marginBottom: 16,
+            animation: "gradientMove 3s ease infinite"
           }}>
             Why Play Our AI Game?
           </h2>
@@ -287,8 +291,13 @@ const LandingPage = ({ onStartGame }) => {
           <h2 style={{
             fontSize: "clamp(32px, 6vw, 48px)",
             fontWeight: 900,
-            color: "#fff",
-            marginBottom: 16
+            background: "linear-gradient(90deg, #00e5ff 0%, #b794f6 25%, #f472b6 50%, #b794f6 75%, #00e5ff 100%)",
+            backgroundSize: "200% auto",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            marginBottom: 16,
+            animation: "gradientMove 3s ease infinite"
           }}>
             How It Works
           </h2>
@@ -390,9 +399,12 @@ const LandingPage = ({ onStartGame }) => {
           lineHeight: 1.2
         }}>
           Ready <span style={{
-            background: "linear-gradient(135deg, #00e5ff, #b794f6)",
+            background: "linear-gradient(90deg, #00e5ff 0%, #b794f6 25%, #f472b6 50%, #b794f6 75%, #00e5ff 100%)",
+            backgroundSize: "200% auto",
             WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent"
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            animation: "gradientMove 3s ease infinite"
           }}>to Challenge the AI?</span>
         </h2>
 
@@ -485,14 +497,13 @@ const LandingPage = ({ onStartGame }) => {
               margin: "0 0 24px",
               fontSize: 28,
               fontWeight: 900,
-              background: "linear-gradient(135deg, #00e5ff, #b794f6)",
+              background: "linear-gradient(90deg, #00e5ff 0%, #b794f6 25%, #f472b6 50%, #b794f6 75%, #00e5ff 100%)",
+              backgroundSize: "200% auto",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              MozBackgroundClip: "text",
-              MozTextFillColor: "transparent",
               backgroundClip: "text",
-              color: "transparent",
-              textAlign: "center"
+              textAlign: "center",
+              animation: "gradientMove 3s ease infinite"
             }}>
               Enter Nickname
             </h2>
@@ -607,6 +618,17 @@ const LandingPage = ({ onStartGame }) => {
           to { 
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        @keyframes gradientMove {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
           }
         }
       `}</style>
