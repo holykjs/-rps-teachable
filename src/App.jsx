@@ -207,8 +207,6 @@ function AppContent() {
       {/* Toast Container */}
       <ToastContainer />
 
-
-
       <ParticleEffect 
         trigger={gameWinner} 
         type="win" 
