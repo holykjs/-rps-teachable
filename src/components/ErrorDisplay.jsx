@@ -24,18 +24,39 @@ const ErrorDisplay = ({ error, onRetry, onDismiss }) => {
   };
 
   return (
-    <div style={{
-      background: 'rgba(244, 67, 54, 0.1)',
-      backdropFilter: 'blur(20px)',
-      border: '2px solid rgba(244, 67, 54, 0.3)',
-      borderRadius: '16px',
-      padding: '20px',
-      margin: '16px auto',
-      maxWidth: '600px',
-      color: 'white',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      boxShadow: '0 10px 40px rgba(244, 67, 54, 0.2)'
-    }}>
+    <>
+      {/* Backdrop overlay */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 9998,
+        animation: 'fadeIn 0.2s ease-out'
+      }} onClick={onDismiss} />
+      
+      {/* Floating error popup */}
+      <div style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: 'rgba(244, 67, 54, 0.1)',
+        backdropFilter: 'blur(20px)',
+        border: '2px solid rgba(244, 67, 54, 0.3)',
+        borderRadius: '16px',
+        padding: '20px',
+        maxWidth: '600px',
+        width: '90%',
+        color: 'white',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        boxShadow: '0 10px 40px rgba(244, 67, 54, 0.2)',
+        zIndex: 9999,
+        animation: 'slideIn 0.3s ease-out'
+      }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
         <div style={{ 
           fontSize: '32px', 
@@ -170,6 +191,23 @@ const ErrorDisplay = ({ error, onRetry, onDismiss }) => {
         </div>
       </div>
     </div>
+    <style>{`
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideIn {
+        from { 
+          opacity: 0;
+          transform: translate(-50%, -45%);
+        }
+        to { 
+          opacity: 1;
+          transform: translate(-50%, -50%);
+        }
+      }
+    `}</style>
+    </>
   );
 };
 
