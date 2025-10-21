@@ -1,32 +1,5 @@
 {
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps",
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cross-Origin-Embedder-Policy",
-          "value": "require-corp"
-        },
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin"
-        }
-      ]
-    }
-  ]
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
