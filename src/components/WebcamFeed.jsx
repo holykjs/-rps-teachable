@@ -78,31 +78,6 @@ const WebcamFeed = ({
         </div>
       )}
       
-      {/* Enhanced Gesture Indicator - Top Right */}
-      <div style={{
-        position: "absolute",
-        top: "16px",
-        right: "16px",
-        zIndex: 50
-      }}>
-        {/* Live Detection Label */}
-        <div style={{
-          fontSize: "10px",
-          color: "rgba(255,255,255,0.7)",
-          textAlign: "center",
-          marginBottom: "4px",
-          fontWeight: "600",
-          textTransform: "uppercase",
-          letterSpacing: "0.5px"
-        }}>
-          Live Detection
-        </div>
-        <GestureIndicator
-          gesture={humanGesture?.gesture}
-          confidence={humanGesture?.confidence || 0}
-          isActive={!!humanGesture}
-        />
-      </div>
 
 
 

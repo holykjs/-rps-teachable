@@ -57,7 +57,7 @@ const PlayerPanel = ({
             {isHuman ? "👤" : isOpponent ? "👥" : "🤖"}
           </div>
           <span style={{ letterSpacing: "0.5px" }}>
-            {isHuman ? playerName.toUpperCase() : isOpponent ? opponentName.toUpperCase() : "AI"}
+            {isHuman ? (playerName || "YOU").toUpperCase() : isOpponent ? opponentName.toUpperCase() : "AI"}
           </span>
         </div>
         <div style={{ 

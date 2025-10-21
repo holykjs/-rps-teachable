@@ -6,7 +6,8 @@ const GesturePreview = ({
   currentGesture, 
   gestureQuality,
   showAllPredictions = false,
-  position = 'top-right' 
+  position = 'top-right',
+  getEmoji
 }) => {
   if (!predictions && !currentGesture) return null;
 
@@ -31,11 +32,18 @@ const GesturePreview = ({
   };
 
   const getGestureEmoji = (gesture) => {
-    switch (gesture?.toLowerCase()) {
+    if (!gesture) return '❓';
+    
+    const normalizedGesture = gesture.toString().toLowerCase().trim();
+    
+    switch (normalizedGesture) {
       case 'rock': return '✊';
       case 'paper': return '✋';
       case 'scissors': return '✌️';
-      default: return '❓';
+      case 'scissor': return '✌️'; // Handle singular form
+      default: 
+        console.log('Unknown gesture in GesturePreview:', gesture, 'normalized:', normalizedGesture);
+        return '❓';
     }
   };
 
@@ -76,7 +84,7 @@ const GesturePreview = ({
           border: `1px solid ${getConfidenceColor(currentGesture.confidence)}50`
         }}>
           <div style={{ fontSize: '18px' }}>
-            {getGestureEmoji(currentGesture.gesture)}
+            {getEmoji ? getEmoji(currentGesture.gesture) : getGestureEmoji(currentGesture.gesture)}
           </div>
           <div style={{ flex: 1 }}>
             <div style={{
@@ -142,7 +150,7 @@ const GesturePreview = ({
                     gap: '8px'
                   }}>
                     <span style={{ fontSize: '14px' }}>
-                      {getGestureEmoji(gesture)}
+                      {getEmoji ? getEmoji(gesture) : getGestureEmoji(gesture)}
                     </span>
                     <span style={{
                       fontSize: '11px',

@@ -22,47 +22,54 @@ const GestureIndicator = ({ gesture, confidence, isActive }) => {
     <div style={{
       background: 'rgba(0, 0, 0, 0.8)',
       backdropFilter: 'blur(12px)',
-      borderRadius: '16px',
-      padding: '12px 16px',
+      borderRadius: '12px',
+      padding: '8px 10px',
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
+      gap: '8px',
       border: `2px solid ${getConfidenceColor(confidence)}`,
-      boxShadow: `0 8px 32px ${getConfidenceColor(confidence)}40`,
-      animation: isActive ? 'gestureDetected 0.3s ease-out' : 'none'
+      boxShadow: `0 4px 16px ${getConfidenceColor(confidence)}40`,
+      animation: isActive ? 'gestureDetected 0.3s ease-out' : 'none',
+      minWidth: '120px',
+      maxWidth: '140px',
+      width: 'fit-content'
     }}>
       <div style={{
-        fontSize: '24px',
-        animation: 'bounce 0.6s ease-in-out infinite alternate'
+        fontSize: '18px',
+        animation: 'bounce 0.6s ease-in-out infinite alternate',
+        flexShrink: 0
       }}>
         {getGestureEmoji(gesture)}
       </div>
       
-      <div>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           color: '#fff',
           fontWeight: '700',
-          fontSize: '14px',
-          marginBottom: '2px'
+          fontSize: '11px',
+          marginBottom: '1px',
+          whiteSpace: 'nowrap'
         }}>
           {gesture}
         </div>
         <div style={{
           color: getConfidenceColor(confidence),
-          fontSize: '12px',
-          fontWeight: '600'
+          fontSize: '9px',
+          fontWeight: '600',
+          whiteSpace: 'nowrap'
         }}>
-          {Math.round(confidence * 100)}% confident
+          {Math.round(confidence * 100)}%
         </div>
       </div>
 
       {/* Confidence bar */}
       <div style={{
-        width: '40px',
-        height: '4px',
+        width: '24px',
+        height: '3px',
         background: 'rgba(255, 255, 255, 0.2)',
         borderRadius: '2px',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        flexShrink: 0
       }}>
         <div style={{
           width: `${confidence * 100}%`,

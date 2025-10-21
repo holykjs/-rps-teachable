@@ -5,7 +5,7 @@ import { drawHand } from "../utilities";
 
 const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/GuM5MHK94/";
 
-const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
+const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats, playerName }) => {
   const [showHowTo, setShowHowTo] = useState(false);
   const [hoveredBtn, setHoveredBtn] = useState(null);
   const [testActive, setTestActive] = useState(false);
@@ -370,6 +370,16 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           }}>
             Rock Paper Scissors AI
           </h2>
+          {playerName && (
+            <p style={{
+              margin: "8px 0 0 12px",
+              fontSize: 16,
+              color: "rgba(255,255,255,0.8)",
+              fontWeight: 500
+            }}>
+              Welcome back, {playerName}! 👋
+            </p>
+          )}
         </div>
 
         {/* Test Toggle */}

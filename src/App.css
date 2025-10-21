@@ -1,24 +1,14 @@
 /* Enhanced RPS AI Game Styles */
 
-/* Animated Background Styles */
+/* Landing Page Theme Background */
 body {
   margin: 0;
   height: 100vh;
   overflow: hidden;
   
-  /* 🌟 BEST STYLE: Pastel Holographic Shimmer - Perfect for AI Gaming */
-  background: 
-    linear-gradient(45deg, 
-      rgba(255, 182, 193, 0.3) 0%,   /* Light Pink */
-      rgba(221, 160, 221, 0.3) 20%,  /* Plum */
-      rgba(173, 216, 230, 0.3) 40%,  /* Light Blue */
-      rgba(144, 238, 144, 0.3) 60%,  /* Light Green */
-      rgba(255, 218, 185, 0.3) 80%,  /* Peach */
-      rgba(230, 230, 250, 0.3) 100%  /* Lavender */
-    ),
-    linear-gradient(135deg, #faf9ff 0%, #f5f3ff 50%, #fdf2f8 100%);
-  background-size: 400% 400%, 100% 100%;
-  animation: pastelHolographicShimmer 15s ease-in-out infinite;
+  /* 🌟 Dark Gradient Theme - Matching Landing Page */
+  background: linear-gradient(135deg, #0a1628 0%, #1a1f3a 25%, #2d1b4e 50%, #1a1f3a 75%, #0a1628 100%);
+  color: #ffffff;
 }
 
 /* Animation Keyframes */
@@ -550,4 +540,39 @@ body.modal-open {
   header p {
     font-size: clamp(11px, 2.8vw, 14px) !important;
   }
+}
+
+/* Landing Page Theme Enhancements */
+.game-container {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 229, 255, 0.1);
+}
+
+/* Enhanced scrollbar to match theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 22, 40, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #00e5ff, #b794f6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #00d4e5, #a78bfa);
+}
+
+/* Button enhancements */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
 }

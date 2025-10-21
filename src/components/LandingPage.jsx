@@ -148,46 +148,6 @@ const LandingPage = ({ onStartGame }) => {
             Learn More
           </button>
         </div>
-
-        {/* Stats */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 24,
-          maxWidth: 800,
-          width: "100%"
-        }}>
-          {[
-            { value: "10,000+", label: "Games Played" },
-            { value: "95%", label: "AI Accuracy" },
-            { value: "Real-time", label: "Learning" }
-          ].map((stat, i) => (
-            <div key={i} style={{
-              padding: 24,
-              background: "rgba(0, 229, 255, 0.05)",
-              border: "1px solid rgba(0, 229, 255, 0.2)",
-              borderRadius: 16,
-              backdropFilter: "blur(10px)"
-            }}>
-              <div style={{
-                fontSize: "clamp(28px, 5vw, 40px)",
-                fontWeight: 900,
-                background: i === 1 ? "linear-gradient(135deg, #b794f6, #f472b6)" : "linear-gradient(135deg, #00e5ff, #00d4e5)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                marginBottom: 8
-              }}>
-                {stat.value}
-              </div>
-              <div style={{
-                fontSize: 14,
-                color: "rgba(255,255,255,0.6)"
-              }}>
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* Why Play Section */}

@@ -11,6 +11,7 @@ import PlayerPanel from "./components/PlayerPanel";
 import GameControls from "./components/GameControls";
 import CountdownOverlay from "./components/CountdownOverlay";
 import RoundResultOverlay from "./components/RoundResultOverlay";
+import LandingPage from "./components/LandingPage";
 import MainMenu from "./components/MainMenu";
 import MultiplayerLobby from "./components/MultiplayerLobby";
 import GestureIndicator from "./components/GestureIndicator";
@@ -30,9 +31,11 @@ const WIN_SCORE = parseInt(import.meta.env.VITE_WIN_SCORE) || 5;
 
 function AppContent() {
   // Custom hooks for AI model, game logic, and toast notifications
-  const [showMenu, setShowMenu] = useState(true);
+  const [showLandingPage, setShowLandingPage] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
   const [showMultiplayerLobby, setShowMultiplayerLobby] = useState(false);
   const [gameMode, setGameMode] = useState('single'); // 'single' or 'multiplayer'
+  const [playerName, setPlayerName] = useState('');
   const {
     model,
     modelsReady,
@@ -120,6 +123,13 @@ function AppContent() {
     setError(null);
   };
 
+  const handleStartFromLanding = (nickname) => {
+    setPlayerName(nickname);
+    setShowLandingPage(false);
+    setShowMenu(true);
+    toast.success(`Welcome, ${nickname}! Choose your game mode.`);
+  };
+
   const handleStartFromMenu = () => {
     setShowMenu(false);
     setShowMultiplayerLobby(false);
@@ -180,9 +190,11 @@ function AppContent() {
       display: "flex", 
       flexDirection: "column",
       position: "relative",
-      overflow: "hidden"
+      overflow: "hidden",
+      background: "linear-gradient(135deg, #0a1628 0%, #1a1f3a 25%, #2d1b4e 50%, #1a1f3a 75%, #0a1628 100%)",
+      color: "#ffffff"
     }}>
-      {/* CSS Animated Background is applied to body element */}
+      {/* Beautiful gradient background matching landing page */}
       
       {/* Game Header */}
       <AIErrorBoundary onRetry={handleRetryModels}>
@@ -231,6 +243,7 @@ function AppContent() {
             gestureQuality={gestureQuality}
             showAllPredictions={true}
             position="left-side"
+            getEmoji={getEmoji}
           />
         </div>
       )}
@@ -271,6 +284,7 @@ function AppContent() {
             gestureQuality={gestureQuality}
             predictions={predictions}
             getEmoji={getEmoji}
+            playerName={playerName || "YOU"}
           />
         </AIErrorBoundary>
 
@@ -331,18 +345,36 @@ function AppContent() {
             top: 18,
             right: 18,
             zIndex: 1000,
-            padding: "10px 14px",
+            padding: "12px 16px",
             borderRadius: 12,
-            border: "1px solid rgba(255,255,255,0.3)",
-            background: "rgba(255,255,255,0.12)",
-            color: "#fff",
+            border: "1px solid rgba(0, 229, 255, 0.3)",
+            background: "linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(183, 148, 246, 0.1))",
+            color: "#00e5ff",
             fontWeight: 700,
             cursor: "pointer",
-            backdropFilter: "blur(8px)"
+            backdropFilter: "blur(12px)",
+            boxShadow: "0 4px 12px rgba(0, 229, 255, 0.2)",
+            transition: "all 0.3s ease",
+            fontSize: "14px"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(183, 148, 246, 0.2))";
+            e.target.style.transform = "translateY(-2px)";
+            e.target.style.boxShadow = "0 6px 20px rgba(0, 229, 255, 0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(183, 148, 246, 0.1))";
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 4px 12px rgba(0, 229, 255, 0.2)";
           }}
         >
           ☰ Menu
         </button>
+      )}
+
+      {/* Landing Page */}
+      {showLandingPage && (
+        <LandingPage onStartGame={handleStartFromLanding} />
       )}
 
       {/* Main Menu Overlay */}
@@ -351,6 +383,7 @@ function AppContent() {
         onStart={handleStartFromMenu}
         onStartMultiplayer={handleStartMultiplayer}
         onOpenStats={() => toast.info("Open Stats from the bottom controls after starting.")}
+        playerName={playerName}
       />
 
       {/* Multiplayer Lobby */}
@@ -360,6 +393,7 @@ function AppContent() {
           onStartSinglePlayer={handleStartFromMenu}
           onGameReady={handleMultiplayerGameReady}
           onBackToMenu={handleBackToMenu}
+          defaultPlayerName={playerName}
         />
       )}
 
