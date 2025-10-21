@@ -11,10 +11,10 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
   const [testActive, setTestActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [error, setError] = useState(null);
-  const [currentGesture, setCurrentGesture] = useState(null);
-  const [gestureCount, setGestureCount] = useState({ Rock: 0, Paper: 0, Scissors: 0 });
   const [localPredictions, setLocalPredictions] = useState([]);
   const [localGesture, setLocalGesture] = useState(null);
+  const [currentGesture, setCurrentGesture] = useState(null);
+  const [gestureCount, setGestureCount] = useState({ Rock: 0, Paper: 0, Scissors: 0 });
   const [handposeModel, setHandposeModel] = useState(null);
   const [tmModel, setTmModel] = useState(null);
   const [modelLoading, setModelLoading] = useState(false);
@@ -22,24 +22,26 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const detectionIntervalRef = useRef(null);
-  const roiCanvasRef = useRef(null); // offscreen canvas for cropped hand ROI
-  const predsHistoryRef = useRef([]); // array of last N predictions (maps)
-  const stableTopHistoryRef = useRef([]); // last K top-class names
+  const roiCanvasRef = useRef(null);
+  const predsHistoryRef = useRef([]);
+  const stableTopHistoryRef = useRef([]);
 
+  const handleTestToggle = () => {
+    setTestActive(!testActive);
+  };
+
+  // Load models when Train Gestures tab is activated
   useEffect(() => {
-    // Load models when Train Gestures tab is activated
     if (testActive && !tmModel && !modelLoading) {
       const loadModels = async () => {
         try {
           setModelLoading(true);
-          console.log("Loading AI models for training...");
+          setError(null);
           
-          // Load Teachable Machine model
           const modelURL = MODEL_BASE_URL + "model.json";
           const metadataURL = MODEL_BASE_URL + "metadata.json";
           const loaded = await tmImage.load(modelURL, metadataURL);
           setTmModel(loaded);
-          console.log("Teachable Machine model loaded");
           
           // Load hand detector (MediaPipe runtime) for hand tracking visualization
           const detectorConfig = {
@@ -73,47 +75,29 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     };
   }, [testActive, tmModel, modelLoading]);
 
+  // Start camera when models are ready
   useEffect(() => {
-    if (testActive && tmModel && !modelLoading) {
-      // Small delay to ensure DOM is ready and models are loaded
+    if (testActive && tmModel && !modelLoading && !cameraActive) {
       const timer = setTimeout(() => {
         startCamera();
       }, 200);
       return () => clearTimeout(timer);
-    } else if (!testActive) {
+    } else if (!testActive && cameraActive) {
       stopCamera();
     }
   }, [testActive, tmModel, modelLoading]);
 
   const detectHandsAndGestures = async () => {
-    if (!webcamRef.current || !canvasRef.current) {
-      console.log("Detection skipped - missing refs:", {
-        webcam: !!webcamRef.current,
-        canvas: !!canvasRef.current
-      });
-      return;
-    }
+    if (!webcamRef.current || !canvasRef.current) return;
 
     const video = webcamRef.current;
     const canvas = canvasRef.current;
     
-    // Check if video is ready
-    if (video.readyState !== 4) {
-      return; // Silently skip if video not ready
-    }
-    
-    // Check if video has valid dimensions
-    if (!video.videoWidth || !video.videoHeight) {
-      return; // Silently skip if no dimensions yet
-    }
+    if (video.readyState !== 4 || !video.videoWidth || !video.videoHeight) return;
     
     const ctx = canvas.getContext('2d');
-
-    // Set canvas dimensions to match video
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
-
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     try {
@@ -127,45 +111,30 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
         }));
         if (hands.length > 0) {
           drawHand(hands, ctx);
-          if (Math.random() < 0.02) {
-            console.log("👋 Hand detected and drawn");
-          }
         }
       }
 
-      // Get gesture predictions from Teachable Machine model (if loaded)
       if (tmModel) {
-        // 1) Choose input: crop to hand ROI if available, else full frame
         let inputForModel = video;
         if (hands.length > 0 && hands[0].landmarks && hands[0].landmarks.length) {
           const { x, y, w, h } = getHandBBox(hands[0].landmarks, canvas.width, canvas.height);
           const off = getOrCreateROICanvas();
           const octx = off.getContext('2d');
-          // Clear and draw the cropped region into fixed 224x224
           octx.clearRect(0, 0, off.width, off.height);
-          octx.drawImage(
-            video,
-            x, y, w, h,
-            0, 0, off.width, off.height
-          );
+          octx.drawImage(video, x, y, w, h, 0, 0, off.width, off.height);
           inputForModel = off;
         }
 
-        // 2) Run prediction on chosen input
         const rawPreds = await tmModel.predict(inputForModel);
-
-        // 3) Smoothing: keep moving average over last N frames
         const smoothed = smoothPredictions(rawPreds);
         setLocalPredictions(smoothed);
 
-        // 4) Stability: require K consecutive frames of same top class
         if (smoothed && smoothed.length > 0) {
           const top = smoothed.reduce((m, p) => p.probability > m.probability ? p : m);
           const stableGesture = updateStability(top.className, top.probability);
           if (stableGesture) {
             setLocalGesture(stableGesture);
           } else if (top.probability < 0.45) {
-            // If confidence falls low, clear gesture to avoid flicker
             setLocalGesture(null);
           }
         }
@@ -175,11 +144,9 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     }
   };
 
-  // Helpers
   const getOrCreateROICanvas = () => {
     if (!roiCanvasRef.current) {
       const c = document.createElement('canvas');
-      // Teachable Machine image models usually accept arbitrary sizes; 224x224 is a safe, small square
       c.width = 224;
       c.height = 224;
       roiCanvasRef.current = c;
@@ -193,8 +160,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
       if (lx < minX) minX = lx; if (ly < minY) minY = ly;
       if (lx > maxX) maxX = lx; if (ly > maxY) maxY = ly;
     }
-    // Add margin around hand box
-    const margin = 0.25; // 25% margin
+    const margin = 0.25;
     let w = maxX - minX;
     let h = maxY - minY;
     let cx = minX + w / 2;
@@ -209,14 +175,11 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
   };
 
   const smoothPredictions = (rawPreds) => {
-    // Convert to map {className: prob}
     const map = {};
     rawPreds.forEach(p => { map[p.className] = p.probability; });
-    // Push into history and cap length
-    const N = 7; // window size
+    const N = 7;
     predsHistoryRef.current.push(map);
     if (predsHistoryRef.current.length > N) predsHistoryRef.current.shift();
-    // Average over history
     const avg = {};
     const classes = rawPreds.map(p => p.className);
     classes.forEach(cls => {
@@ -224,12 +187,11 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
       predsHistoryRef.current.forEach(h => { sum += (h[cls] ?? 0); });
       avg[cls] = sum / predsHistoryRef.current.length;
     });
-    // Return list in same order with averaged probabilities
     return classes.map(cls => ({ className: cls, probability: avg[cls] }));
   };
 
   const updateStability = (topClass, topProb) => {
-    const K = 4; // require 4 consecutive top-class frames
+    const K = 4;
     const MIN_CONF = 0.6;
     stableTopHistoryRef.current.push(topClass);
     if (stableTopHistoryRef.current.length > K) stableTopHistoryRef.current.shift();
@@ -310,20 +272,6 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
     setLocalPredictions([]);
   };
 
-  const handleTestToggle = () => {
-    setTestActive(!testActive);
-  };
-
-  const practiceGesture = (gesture) => {
-    setCurrentGesture(gesture);
-    setGestureCount(prev => ({ ...prev, [gesture]: prev[gesture] + 1 }));
-  };
-
-  const resetPractice = () => {
-    setGestureCount({ Rock: 0, Paper: 0, Scissors: 0 });
-    setCurrentGesture(null);
-  };
-
   if (!isVisible) return null;
 
   return (
@@ -334,30 +282,98 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(135deg, rgba(15,15,35,0.85), rgba(15,52,96,0.85))",
-      backdropFilter: "blur(12px)",
-      animation: "fadeIn 0.3s ease-out"
+      background: "radial-gradient(ellipse at center, #1a1f3a 0%, #0a1628 50%, #2d1b4e 100%)",
+      animation: "fadeIn 0.3s ease-out",
+      overflow: "hidden"
     }}>
+      {/* Animated particles background */}
       <div style={{
-        width: "min(880px, 92vw)",
-        maxHeight: "90vh",
+        position: "absolute",
+        inset: 0,
+        overflow: "hidden",
+        pointerEvents: "none"
+      }}>
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              background: "rgba(0, 229, 255, 0.3)",
+              borderRadius: "50%",
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Hand logo at top */}
+      {!testActive && (
+      <div style={{
+        position: "absolute",
+        top: "2%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        display: "flex",
+        gap: 8,
+        animation: "bounce 2s ease-in-out infinite",
+        zIndex: 100001
+      }}>
+        <div style={{
+          fontSize: 80,
+          filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.3))",
+          transform: "rotate(-15deg)"
+        }}>✊</div>
+        <div style={{
+          fontSize: 80,
+          filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.3))",
+          transform: "rotate(15deg)"
+        }}>✋</div>
+                <div style={{
+          fontSize: 80,
+          filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.3))",
+          transform: "rotate(-15deg)"
+        }}>✌️</div>
+      </div>
+      )}
+
+      <div style={{
+        width: "min(720px, 90vw)",
         borderRadius: 24,
-        background: "linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06))",
-        border: "1px solid rgba(255,255,255,0.25)",
-        boxShadow: "0 30px 80px rgba(0,0,0,0.5)",
-        padding: "28px 28px 24px",
+        background: "rgba(26, 31, 58, 0.6)",
+        backdropFilter: "blur(20px)",
+        border: "2px solid rgba(0, 229, 255, 0.3)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0, 229, 255, 0.2)",
+        padding: "32px",
         color: "#fff",
         overflow: "hidden",
         animation: "slideUp 0.4s ease-out"
       }}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 12, marginBottom: 12 }}>
-          <span style={{ fontSize: 28, animation: "bounce 2s ease-in-out infinite" }}>✊✋✌️</span>
-          <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900, letterSpacing: 0.5 }}>Rock Paper Scissors AI</h2>
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center", 
+          gap: 12, 
+          marginBottom: 28 
+        }}>
+          <h2 style={{ 
+            margin: "0 0 0 12px", 
+            fontSize: 32, 
+            fontWeight: 900, 
+            letterSpacing: 0.5,
+            textShadow: "0 2px 8px rgba(0,0,0,0.3)"
+          }}>
+            Rock Paper Scissors AI
+          </h2>
         </div>
 
         {/* Test Toggle */}
-        <div style={{ marginBottom: 16, display: 'flex', gap: 10 }}>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 10, justifyContent: 'center' }}>
           <button
             onClick={() => handleTestToggle()}
             onMouseEnter={() => setHoveredBtn('info-tab')}
@@ -366,7 +382,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
               padding: '10px 20px',
               borderRadius: 10,
               border: '1px solid rgba(255,255,255,0.3)',
-              background: !testActive ? 'rgba(102,126,234,0.4)' : 'transparent',
+              background: !testActive ? 'rgba(0, 229, 255, 0.3)' : 'transparent',
               color: '#fff',
               fontWeight: 700,
               cursor: 'pointer',
@@ -384,7 +400,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
               padding: '10px 20px',
               borderRadius: 10,
               border: '1px solid rgba(255,255,255,0.3)',
-              background: testActive ? 'rgba(102,126,234,0.4)' : 'transparent',
+              background: testActive ? 'rgba(183, 148, 246, 0.3)' : 'transparent',
               color: '#fff',
               fontWeight: 700,
               cursor: 'pointer',
@@ -396,324 +412,402 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           </button>
         </div>
 
-        {/* Body */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20 }}>
-          {/* Left: Hero or Game */}
+        {/* Body - Two columns */}
+        {!testActive ? (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          {/* Left: Description */}
           <div style={{
-            background: "linear-gradient(135deg, rgba(102,126,234,0.35), rgba(118,75,162,0.3))",
+            background: "rgba(0,0,0,0.2)",
             borderRadius: 16,
-            padding: 16,
-            border: "1px solid rgba(255,255,255,0.18)",
-            minHeight: 260,
+            padding: 24,
+            border: "1px solid rgba(0, 229, 255, 0.2)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
+            gap: 20
           }}>
-            {!testActive ? (
-              <>
             <div>
-              <h3 style={{ margin: "6px 0 10px", fontSize: 18, opacity: 0.95 }}>Real‑time Hand Tracking</h3>
-              <p style={{ margin: 0, opacity: 0.8, lineHeight: 1.5 }}>
-                Use your webcam to play Rock‑Paper‑Scissors against an AI. The model recognizes your hand gesture in real time.
+              <h3 style={{ 
+                margin: "0 0 12px", 
+                fontSize: 20, 
+                fontWeight: 700,
+                color: "#fff"
+              }}>
+                Real-time Hand Tracking
+              </h3>
+              <p style={{ 
+                margin: 0, 
+                opacity: 0.85, 
+                lineHeight: 1.6,
+                fontSize: 14,
+                color: "rgba(255,255,255,0.85)"
+              }}>
+                Use your webcam to play Rock-Paper-Scissors against an AI. The model reads your hand gestures recognizes hand gesture to real time.
               </p>
             </div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <button 
-                onClick={() => setShowHowTo(true)} 
-                onMouseEnter={() => setHoveredBtn('howto1')}
-                onMouseLeave={() => setHoveredBtn(null)}
-                style={{
-                  ...ghostBtnStyle,
-                  transform: hoveredBtn === 'howto1' ? 'translateY(-2px)' : 'translateY(0)',
-                  background: hoveredBtn === 'howto1' ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                How to Play
-              </button>
-              <button 
-                onClick={onOpenStats} 
-                onMouseEnter={() => setHoveredBtn('stats')}
-                onMouseLeave={() => setHoveredBtn(null)}
-                style={{
-                  ...ghostBtnStyle,
-                  transform: hoveredBtn === 'stats' ? 'translateY(-2px)' : 'translateY(0)',
-                  background: hoveredBtn === 'stats' ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                View Stats
-              </button>
-            </div>
-            </>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 12 }}>
-                {/* Camera Test Header */}
-                <div>
-                  <h3 style={{ margin: '0 0 8px', fontSize: 18, opacity: 0.95 }}>AI Gesture Training</h3>
-                  <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>
-                    {modelLoading ? 'Loading AI models...' : tmModel ? 'Real-time AI gesture recognition with confidence scores' : 'AI model ready'}
-                  </p>
-                </div>
+                onClick={onStart}
+                onMouseEnter={() => setHoveredBtn('newgame')}
+                        onMouseLeave={() => setHoveredBtn(null)}
+                        style={{
+                          padding: "12px 24px",
+                          borderRadius: 12,
+                          border: "none",
+                          background: hoveredBtn === 'newgame' 
+                            ? "linear-gradient(135deg, #00e5ff, #b794f6)"
+                            : "linear-gradient(135deg, #00d4e5, #a78bfa)",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 14,
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          transform: hoveredBtn === 'newgame' ? 'translateY(-2px)' : 'translateY(0)',
+                          boxShadow: hoveredBtn === 'newgame' 
+                            ? "0 6px 20px rgba(0, 229, 255, 0.4)"
+                            : "0 4px 12px rgba(0,0,0,0.3)"
+                        }}
+                      >
+                        New Game
+                      </button>
+                    </div>
+                  </div>
 
-                {/* Camera Feed */}
-                <div style={{ 
-                  position: 'relative', 
+                  {/* Right: Action buttons */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <button 
+                      onClick={onStart} 
+                      onMouseEnter={() => setHoveredBtn('play')}
+                      onMouseLeave={() => setHoveredBtn(null)}
+                      style={{
+                        padding: "18px 24px",
+                        borderRadius: 16,
+                        border: "none",
+                        background: hoveredBtn === 'play'
+                          ? "linear-gradient(135deg, #00e5ff, #b794f6)"
+                          : "linear-gradient(135deg, #00d4e5, #a78bfa)",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        transform: hoveredBtn === 'play' ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: hoveredBtn === 'play'
+                          ? "0 8px 24px rgba(0, 229, 255, 0.5)"
+                          : "0 4px 16px rgba(0,0,0,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>🎮</span>
+                      Play vs Computer
+                    </button>
+                    
+                    <button 
+                      onClick={onStartMultiplayer} 
+                      onMouseEnter={() => setHoveredBtn('multiplayer')}
+                      onMouseLeave={() => setHoveredBtn(null)}
+                      style={{
+                        padding: "18px 24px",
+                        borderRadius: 16,
+                        border: "none",
+                        background: hoveredBtn === 'multiplayer'
+                          ? "linear-gradient(135deg, #00e5ff, #b794f6)"
+                          : "linear-gradient(135deg, #00d4e5, #a78bfa)",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        transform: hoveredBtn === 'multiplayer' ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: hoveredBtn === 'multiplayer'
+                          ? "0 8px 24px rgba(0, 229, 255, 0.5)"
+                          : "0 4px 16px rgba(0,0,0,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>👥</span>
+                      Multiplayer
+                    </button>
+                    
+                    <button 
+                      onClick={() => setShowHowTo(true)} 
+                      onMouseEnter={() => setHoveredBtn('howto')}
+                      onMouseLeave={() => setHoveredBtn(null)}
+                      style={{
+                        padding: "18px 24px",
+                        borderRadius: 16,
+                        border: "none",
+                        background: hoveredBtn === 'howto'
+                          ? "linear-gradient(135deg, #b794f6, #f472b6)"
+                          : "linear-gradient(135deg, #a78bfa, #ec4899)",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        transform: hoveredBtn === 'howto' ? 'scale(1.02)' : 'scale(1)',
+                        boxShadow: hoveredBtn === 'howto'
+                          ? "0 8px 24px rgba(183, 148, 246, 0.5)"
+                          : "0 4px 16px rgba(0,0,0,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>🎓</span>
+                      How to Play
+                    </button>
+                    
+                    <a href="https://teachablemachine.withgoogle.com/" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+<button 
+  onMouseEnter={() => setHoveredBtn('about')}
+  onMouseLeave={() => setHoveredBtn(null)}
+  style={{
+    width: "100%",
+    padding: "18px 24px",
+    borderRadius: 16,
+    border: "none",
+    background: hoveredBtn === 'about'
+      ? "linear-gradient(135deg, #1a1f3a, #2d1b4e)"
+      : "linear-gradient(135deg, #0a1628, #1a1f3a)",
+    color: "#fff",
+    fontWeight: 800,
+    fontSize: 16,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    transform: hoveredBtn === 'about' ? 'scale(1.02)' : 'scale(1)',
+    boxShadow: hoveredBtn === 'about'
+      ? "0 8px 24px rgba(0, 229, 255, 0.3)"
+      : "0 4px 16px rgba(0,0,0,0.3)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6
+  }}
+>
+  <span style={{ fontSize: 20, marginRight: 6 }}>🤖</span>
+  About the AI
+</button>
+
+            </a>
+
+          </div>
+        </div>
+        ) : (
+        <div style={{
+          background: "rgba(0,0,0,0.2)",
+          borderRadius: 16,
+          padding: 24,
+          border: "1px solid rgba(0, 229, 255, 0.2)"
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Camera Feed */}
+            <div style={{ 
+              position: 'relative', 
+              width: '100%', 
+              height: 320, 
+              borderRadius: 12, 
+              overflow: 'hidden',
+              background: 'rgba(0,0,0,0.3)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+              <video 
+                ref={webcamRef}
+                autoPlay
+                playsInline
+                muted
+                width="640"
+                height="480"
+                style={{ 
                   width: '100%', 
-                  height: 320, 
-                  borderRadius: 12, 
-                  overflow: 'hidden',
-                  background: 'rgba(0,0,0,0.3)',
-                  border: '1px solid rgba(255,255,255,0.2)'
+                  height: '100%', 
+                  objectFit: 'cover',
+                  transform: 'scaleX(-1)',
+                  opacity: cameraActive ? 1 : 0
+                }}
+              />
+              <canvas
+                ref={canvasRef}
+                width="640"
+                height="480"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  opacity: cameraActive ? 1 : 0,
+                  pointerEvents: 'none'
+                }}
+              />
+              {!cameraActive && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  height: '100%',
+                  flexDirection: 'column',
+                  gap: 8,
+                  position: 'absolute',
+                  inset: 0
                 }}>
-                  <video 
-                    ref={webcamRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    width="640"
-                    height="480"
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover',
-                      transform: 'scaleX(-1)',
-                      opacity: cameraActive ? 1 : 0
-                    }}
-                  />
-                  <canvas
-                    ref={canvasRef}
-                    width="640"
-                    height="480"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      opacity: cameraActive ? 1 : 0,
-                      pointerEvents: 'none'
-                    }}
-                  />
-                  {!cameraActive && (
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      height: '100%',
-                      flexDirection: 'column',
-                      gap: 8,
-                      position: 'absolute',
-                      inset: 0
-                    }}>
-                      <div style={{ fontSize: 32, opacity: 0.5 }}>📹</div>
-                      <div style={{ fontSize: 13, opacity: 0.6 }}>Camera Off</div>
-                    </div>
-                  )}
-                  {localGesture && cameraActive && (
-                    <div style={{
-                      position: 'absolute',
-                      top: 10,
-                      left: 10,
-                      padding: '8px 14px',
-                      borderRadius: 10,
-                      background: 'rgba(102,126,234,0.95)',
-                      color: '#fff',
-                      fontWeight: 700,
-                      fontSize: 16,
-                      animation: 'popIn 0.3s ease-out',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                    }}>
-                      {localGesture === 'Rock' ? '✊' : localGesture === 'Paper' ? '✋' : '✌️'} {localGesture}
-                    </div>
-                  )}
-                  {!tmModel && cameraActive && (
-                    <div style={{
-                      position: 'absolute',
-                      top: 10,
-                      left: 10,
-                      padding: '8px 14px',
-                      borderRadius: 10,
-                      background: 'rgba(239,68,68,0.9)',
-                      color: '#fff',
-                      fontWeight: 600,
-                      fontSize: 12,
-                    }}>
-                      ⚠️ {modelLoading ? 'Loading model...' : 'AI Model not loaded'}
-                    </div>
-                  )}
+                  <div style={{ fontSize: 32, opacity: 0.5 }}>📹</div>
+                  <div style={{ fontSize: 13, opacity: 0.6 }}>Camera Off</div>
                 </div>
+              )}
+              {localGesture && cameraActive && (
+                <div style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 10,
+                  padding: '8px 14px',
+                  borderRadius: 10,
+                  background: 'rgba(102,126,234,0.95)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  animation: 'popIn 0.3s ease-out',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                }}>
+                  {localGesture === 'Rock' ? '✊' : localGesture === 'Paper' ? '✋' : '✌️'} {localGesture}
+                </div>
+              )}
+              {!tmModel && cameraActive && (
+                <div style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 10,
+                  padding: '8px 14px',
+                  borderRadius: 10,
+                  background: 'rgba(239,68,68,0.9)',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: 12
+                }}>
+                  ⚠️ {modelLoading ? 'Loading model...' : 'AI Model not loaded'}
+                </div>
+              )}
+            </div>
 
-                {/* AI Recognition Display */}
-                {cameraActive && tmModel && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4, fontWeight: 600 }}>
-                      🤖 AI Recognition:
-                    </div>
-                    {localPredictions.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {localPredictions.map((pred, idx) => {
-                          const percentage = (pred.probability * 100).toFixed(1);
-                          const isHighest = pred.className === localGesture;
-                          return (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <div style={{ 
-                                fontSize: 16, 
-                                minWidth: 24,
-                                opacity: isHighest ? 1 : 0.5
-                              }}>
-                                {pred.className === 'Rock' ? '✊' : pred.className === 'Paper' ? '✋' : '✌️'}
-                              </div>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ 
-                                  display: 'flex', 
-                                  justifyContent: 'space-between', 
-                                  fontSize: 11, 
-                                  marginBottom: 2,
-                                  opacity: 0.8
-                                }}>
-                                  <span style={{ fontWeight: isHighest ? 700 : 600 }}>{pred.className}</span>
-                                  <span>{percentage}%</span>
-                                </div>
-                                <div style={{
-                                  height: 6,
-                                  background: 'rgba(255,255,255,0.1)',
-                                  borderRadius: 3,
-                                  overflow: 'hidden'
-                                }}>
-                                  <div style={{
-                                    height: '100%',
-                                    width: `${percentage}%`,
-                                    background: isHighest 
-                                      ? 'linear-gradient(90deg, #667eea, #764ba2)'
-                                      : 'rgba(255,255,255,0.3)',
-                                    transition: 'width 0.3s ease',
-                                    borderRadius: 3
-                                  }} />
-                                </div>
-                              </div>
+            {/* AI Recognition Display */}
+            {cameraActive && tmModel && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4, fontWeight: 600 }}>
+                  🤖 AI Recognition:
+                </div>
+                {localPredictions.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {localPredictions.map((pred, idx) => {
+                      const percentage = (pred.probability * 100).toFixed(1);
+                      const isHighest = pred.className === localGesture;
+                      return (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ 
+                            fontSize: 16, 
+                            minWidth: 24,
+                            opacity: isHighest ? 1 : 0.5
+                          }}>
+                            {pred.className === 'Rock' ? '✊' : pred.className === 'Paper' ? '✋' : '✌️'}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              fontSize: 11, 
+                              marginBottom: 2,
+                              opacity: 0.8
+                            }}>
+                              <span style={{ fontWeight: isHighest ? 700 : 600 }}>{pred.className}</span>
+                              <span>{percentage}%</span>
                             </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div style={{ 
-                        padding: '12px', 
-                        textAlign: 'center', 
-                        fontSize: 12, 
-                        opacity: 0.6,
-                        background: 'rgba(255,255,255,0.05)',
-                        borderRadius: 8
-                      }}>
-                        Show your hand to the camera
-                      </div>
-                    )}
+                            <div style={{
+                              height: 6,
+                              background: 'rgba(255,255,255,0.1)',
+                              borderRadius: 3,
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                height: '100%',
+                                width: `${percentage}%`,
+                                background: isHighest 
+                                  ? 'linear-gradient(90deg, #00e5ff, #b794f6)'
+                                  : 'rgba(255,255,255,0.3)',
+                                transition: 'width 0.3s ease',
+                                borderRadius: 3
+                              }} />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
-
-                {!cameraActive && modelLoading && (
-                  <div style={{
-                    padding: '12px',
-                    borderRadius: 8,
-                    background: 'rgba(102,126,234,0.2)',
-                    border: '1px solid rgba(102,126,234,0.4)',
-                    fontSize: 13,
-                    textAlign: 'center',
-                    opacity: 0.9
+                ) : (
+                  <div style={{ 
+                    padding: '12px', 
+                    textAlign: 'center', 
+                    fontSize: 12, 
+                    opacity: 0.6,
+                    background: 'rgba(255,255,255,0.05)',
+                    borderRadius: 8
                   }}>
-                    🔄 Loading AI models...
-                  </div>
-                )}
-                
-                {!cameraActive && !modelLoading && tmModel && (
-                  <div style={{
-                    padding: '12px',
-                    borderRadius: 8,
-                    background: 'rgba(102,126,234,0.2)',
-                    border: '1px solid rgba(102,126,234,0.4)',
-                    fontSize: 13,
-                    textAlign: 'center',
-                    opacity: 0.9
-                  }}>
-                    📹 Starting camera...
-                  </div>
-                )}
-
-                {error && (
-                  <div style={{
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    background: 'rgba(239,68,68,0.2)',
-                    border: '1px solid rgba(239,68,68,0.4)',
-                    color: '#fff',
-                    fontSize: 12,
-                    opacity: 0.9
-                  }}>
-                    ⚠️ {error}
+                    Show your hand to the camera
                   </div>
                 )}
               </div>
             )}
-          </div>
 
-          {/* Right: Actions */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <button 
-              onClick={onStart} 
-              onMouseEnter={() => setHoveredBtn('start')}
-              onMouseLeave={() => setHoveredBtn(null)}
-              style={{
-                ...bigBtnStyle,
-                transform: hoveredBtn === 'start' ? 'scale(1.05)' : 'scale(1)',
-                boxShadow: hoveredBtn === 'start' ? '0 8px 24px rgba(102,126,234,0.5)' : '0 4px 12px rgba(0,0,0,0.3)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              🤖 Play vs Computer
-            </button>
-            <button 
-              onClick={onStartMultiplayer} 
-              onMouseEnter={() => setHoveredBtn('multiplayer')}
-              onMouseLeave={() => setHoveredBtn(null)}
-              style={{
-                ...bigBtnStyle,
-                background: "linear-gradient(135deg, #f093fb, #f5576c)",
-                transform: hoveredBtn === 'multiplayer' ? 'scale(1.05)' : 'scale(1)',
-                boxShadow: hoveredBtn === 'multiplayer' ? '0 8px 24px rgba(245,87,108,0.5)' : '0 4px 12px rgba(0,0,0,0.3)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              👥 Multiplayer
-            </button>
-            <button 
-              onClick={() => setShowHowTo(true)} 
-              onMouseEnter={() => setHoveredBtn('howto2')}
-              onMouseLeave={() => setHoveredBtn(null)}
-              style={{
-                ...softBtnStyle,
-                transform: hoveredBtn === 'howto2' ? 'translateY(-2px)' : 'translateY(0)',
-                background: hoveredBtn === 'howto2' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              📖 How to Play
-            </button>
-            <a href="https://teachablemachine.withgoogle.com/" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-              <button 
-                onMouseEnter={() => setHoveredBtn('about')}
-                onMouseLeave={() => setHoveredBtn(null)}
-                style={{
-                  ...softBtnStyle,
-                  transform: hoveredBtn === 'about' ? 'translateY(-2px)' : 'translateY(0)',
-                  background: hoveredBtn === 'about' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                🤖 About the AI
-              </button>
-            </a>
+            {!cameraActive && modelLoading && (
+              <div style={{
+                padding: '12px',
+                borderRadius: 8,
+                background: 'rgba(102,126,234,0.2)',
+                border: '1px solid rgba(102,126,234,0.4)',
+                fontSize: 13,
+                textAlign: 'center',
+                opacity: 0.9
+              }}>
+                🔄 Loading AI models...
+              </div>
+            )}
+            
+            {!cameraActive && !modelLoading && tmModel && (
+              <div style={{
+                padding: '12px',
+                borderRadius: 8,
+                background: 'rgba(102,126,234,0.2)',
+                border: '1px solid rgba(102,126,234,0.4)',
+                fontSize: 13,
+                textAlign: 'center',
+                opacity: 0.9
+              }}>
+                📹 Starting camera...
+              </div>
+            )}
+
+            {error && (
+              <div style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                background: 'rgba(239,68,68,0.2)',
+                border: '1px solid rgba(239,68,68,0.4)',
+                color: '#fff',
+                fontSize: 12,
+                opacity: 0.9
+              }}>
+                ⚠️ {error}
+              </div>
+            )}
           </div>
         </div>
+        )}
 
         {/* How to Play Modal (lightweight) */}
         {showHowTo && (
@@ -729,8 +823,8 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
           }}>
             <div style={{
               width: "min(720px, 92vw)",
-              background: "rgba(30, 30, 60, 0.95)",
-              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(26, 31, 58, 0.95)",
+              border: "1px solid rgba(0, 229, 255, 0.3)",
               borderRadius: 16,
               padding: 22,
               color: "#fff"
@@ -758,6 +852,7 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
             </div>
           </div>
         )}
+
       </div>
 
       {/* CSS Animations */}
@@ -797,8 +892,8 @@ const MainMenu = ({ isVisible, onStart, onStartMultiplayer, onOpenStats }) => {
 const primaryBtnStyle = {
   padding: "12px 18px",
   borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.35)",
-  background: "linear-gradient(135deg, #667eea, #764ba2)",
+  border: "1px solid rgba(0, 229, 255, 0.35)",
+  background: "linear-gradient(135deg, #00e5ff, #b794f6)",
   color: "#fff",
   fontWeight: 800,
   letterSpacing: 0.4,

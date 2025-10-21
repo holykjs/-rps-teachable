@@ -162,9 +162,16 @@ const GameHeader = ({
       )}
       
       {model && !isWebcamOn && !loading && (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          <div style={{ fontSize: "48px", marginBottom: "12px" }}>📷</div>
-          <p style={{ color: "white", fontSize: 18, margin: 0 }}>
+        <div style={{ 
+          textAlign: "center", 
+          padding: "8px 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px"
+        }}>
+          <div style={{ fontSize: "20px" }}>📷</div>
+          <p style={{ color: "white", fontSize: 14, margin: 0 }}>
             Initializing camera...
           </p>
         </div>
