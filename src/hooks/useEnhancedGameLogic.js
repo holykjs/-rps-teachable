@@ -175,7 +175,7 @@ export const useEnhancedGameLogic = (winScore = 5, multiplayer = null) => {
     }
   };
 
-  const playRound = (humanGesture, onError) => {
+  const playRound = (getCurrentGesture, onError) => {
     if (gameWinner) {
       onError("Game over! Reset to play again.");
       return;
@@ -220,7 +220,8 @@ export const useEnhancedGameLogic = (winScore = 5, multiplayer = null) => {
           stopImageShuffle();
           setComputerMove(computerChoice);
           
-          const result = captureGestures(computerChoice, humanGesture);
+          const currentGesture = getCurrentGesture();
+          const result = captureGestures(computerChoice, currentGesture);
           if (!result.success) {
             onError(result.error);
           }

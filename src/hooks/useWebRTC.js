@@ -10,18 +10,35 @@ export const useWebRTC = (socket, roomId, isHost) => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  // Enhanced WebRTC configuration for production
+  // Enhanced WebRTC configuration for production with TURN server
   const rtcConfig = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
       { urls: 'stun:stun2.l.google.com:19302' },
       { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' }
+      { urls: 'stun:stun4.l.google.com:19302' },
+      // Free TURN server for production reliability
+      {
+        urls: 'turn:openrelay.metered.ca:80',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls: 'turn:openrelay.metered.ca:443',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      }
     ],
     iceCandidatePoolSize: 10,
     bundlePolicy: 'max-bundle',
-    rtcpMuxPolicy: 'require'
+    rtcpMuxPolicy: 'require',
+    iceTransportPolicy: 'all'
   };
 
   // Initialize peer connection
@@ -44,11 +61,19 @@ export const useWebRTC = (socket, roomId, isHost) => {
     // Handle ICE candidates
     pc.onicecandidate = (event) => {
       if (event.candidate && socket) {
+        console.log('ICE candidate:', event.candidate.type, event.candidate.candidate);
         socket.emit('ice-candidate', {
           roomId,
           candidate: event.candidate
         });
+      } else if (!event.candidate) {
+        console.log('ICE gathering complete');
       }
+    };
+
+    // Handle ICE gathering state changes
+    pc.onicegatheringstatechange = () => {
+      console.log('ICE gathering state:', pc.iceGatheringState);
     };
 
     // Handle connection state changes

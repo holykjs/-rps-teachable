@@ -96,7 +96,7 @@ export const useGameLogic = (winScore = 5) => {
     stopImageShuffle();
   };
 
-  const playRound = (humanGesture, onError) => {
+  const playRound = (getCurrentGesture, onError) => {
     if (gameWinner) {
       onError("Game over! Reset to play again.");
       return;
@@ -120,10 +120,13 @@ export const useGameLogic = (winScore = 5) => {
           stopImageShuffle();
           setComputerMove(computerChoice);
           
-          const result = captureGestures(computerChoice, humanGesture);
+          // Capture gesture at the exact moment countdown ends
+          const currentGesture = getCurrentGesture();
+          const result = captureGestures(computerChoice, currentGesture);
           if (!result.success) {
             onError(result.error);
           }
+          
           setGameActive(false);
           return null;
         }

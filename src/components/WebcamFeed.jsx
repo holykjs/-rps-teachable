@@ -85,6 +85,18 @@ const WebcamFeed = ({
         right: "16px",
         zIndex: 50
       }}>
+        {/* Live Detection Label */}
+        <div style={{
+          fontSize: "10px",
+          color: "rgba(255,255,255,0.7)",
+          textAlign: "center",
+          marginBottom: "4px",
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}>
+          Live Detection
+        </div>
         <GestureIndicator
           gesture={humanGesture?.gesture}
           confidence={humanGesture?.confidence || 0}
@@ -92,39 +104,6 @@ const WebcamFeed = ({
         />
       </div>
 
-      {/* Human Last Move */}
-      {humanMove && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: 12,
-            left: "50%",
-            transform: "translateX(-50%)",
-            background:
-              "linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5))",
-            color: "white",
-            padding: "10px 14px",
-            borderRadius: 9999,
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            border: "1px solid rgba(255,255,255,0.2)",
-            boxShadow: "0 10px 24px rgba(0,0,0,0.35)",
-            backdropFilter: "blur(10px)",
-            zIndex: 30
-          }}
-        >
-          <div style={{ fontSize: 22, lineHeight: 1 }}>{getEmoji(humanMove)}</div>
-          <div style={{
-            fontSize: 13,
-            fontWeight: 700,
-            letterSpacing: 0.2,
-            textTransform: "capitalize"
-          }}>
-            {humanMove}
-          </div>
-        </div>
-      )}
 
 
       {/* Gesture Confidence Display */}

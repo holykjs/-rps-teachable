@@ -106,7 +106,7 @@ function AppContent() {
       return;
     }
     
-    playRound(humanGesture, (errorMsg) => {
+    playRound(() => humanGesture, (errorMsg) => {
       toast.error(errorMsg);
     });
   };
